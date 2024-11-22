@@ -3,8 +3,6 @@ from werkzeug.utils import secure_filename
 import os
 from app.models import db, Song, History
 from flask_login import current_user, login_required
-from mutagen.mp3 import MP3
-from mutagen.id3 import ID3, TIT2, TPE1, TALB, TCON
 from flask import send_from_directory
 from datetime import datetime
 import requests
