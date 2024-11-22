@@ -172,21 +172,21 @@ from .aws_routes import remove_file_from_s3
 
 @song_routes.route('/remove/<song_id>', methods=['GET'])
 @login_required
-def delete_song_lo(song_id):
+def delete_song(song_id):
     song = Song.query.filter_by(id=song_id).first()
-    if song.user_id == current_user.id:
-        # Ensure the song exists and belongs to the current user
-        if not song:
-            return jsonify({"error": "Song not found"}), 404
-        if song.user_id != current_user.id:
+    if not song:
+        return jsonify({"error": "Song not found"}), 404
+
+    if song.user_id != current_user.id:
             return jsonify({"error": "Unauthorized"}), 403
 
-        removed = remove_file_from_s3(song.file_url)
+    removed = remove_file_from_s3(song.file_url)
 
-        if removed:
-            # Delete the song record
-            db.session.delete(song)
-            db.session.commit()
-            return jsonify({"message": "Song deleted successfully", "song_id": song_id, "name": song.name}), 200
-        else:
-            return jsonify({"error": "AWS bucket delete error"}), 400
+    if removed:
+        # Delete the song record
+        db.session.delete(song)
+        db.session.commit()
+        return jsonify({"message": "Song deleted successfully", "song_id": song_id, "name": song.name}), 200
+    else:
+        return jsonify({"error": "AWS bucket delete error"}), 400
+
