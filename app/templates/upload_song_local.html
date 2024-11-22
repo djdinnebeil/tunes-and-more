@@ -1,0 +1,74 @@
+{% extends 'layout.html' %}
+
+{% block title %}Upload Song{% endblock %}
+
+{% block content %}
+<h1>Upload a Song</h1>
+<form id="upload-form">
+    <label for="file">MP3 File:</label>
+    <input type="file" name="file" id="file" accept=".mp3" required>
+    <button type="button" id="extract-metadata">Extract Metadata</button>
+</form>
+
+<div id="metadata-form" style="display: none;">
+    <h2>Edit Song Details</h2>
+    <form id="save-song-form" action="/songs/upload/local/save" method="POST" enctype="multipart/form-data">
+        <input type="file" name="file" id="file-hidden" style="display: none;">
+        <label for="name">Song Name:</label>
+        <input type="text" name="name" id="name" required>
+        <label for="artist">Artist:</label>
+        <input type="text" name="artist" id="artist" required>
+        <label for="album">Album:</label>
+        <input type="text" name="album" id="album">
+        <label for="genre">Genre:</label>
+        <input type="text" name="genre" id="genre">
+        <label for="duration">Duration (seconds):</label>
+        <input type="number" name="duration" id="duration" required>
+        <button type="submit">Upload to Server</button>
+    </form>
+</div>
+
+<script>
+document.getElementById('extract-metadata').addEventListener('click', function () {
+    const fileInput = document.getElementById('file');
+    const hiddenFileInput = document.getElementById('file-hidden');
+    const metadataForm = document.getElementById('metadata-form');
+
+    if (fileInput.files.length === 0) {
+        alert('Please select a file.');
+        return;
+    }
+
+    const file = fileInput.files[0];
+    hiddenFileInput.files = fileInput.files; // Sync with hidden input
+
+    // Extract metadata
+    jsmediatags.read(file, {
+        onSuccess: function (tag) {
+            const { tags } = tag;
+            document.getElementById('name').value = tags.title || '';
+            document.getElementById('artist').value = tags.artist || '';
+            document.getElementById('album').value = tags.album || '';
+            document.getElementById('genre').value = tags.genre || 'Unknown';
+
+            // Calculate duration using an audio element
+            const audio = document.createElement('audio');
+            audio.src = URL.createObjectURL(file);
+
+            audio.addEventListener('loadedmetadata', function () {
+                document.getElementById('duration').value = Math.round(audio.duration);
+                metadataForm.style.display = 'block';
+            });
+        },
+        onError: function (error) {
+            console.error('Error reading metadata:', error);
+            alert('Could not extract metadata. Please fill the form manually.');
+            metadataForm.style.display = 'block';
+        },
+    });
+});
+
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jsmediatags/3.9.5/jsmediatags.min.js"></script>
+{% endblock %}

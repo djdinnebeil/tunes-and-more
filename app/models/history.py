@@ -1,12 +1,16 @@
-from .db import db
+from .db import db, environment, SCHEMA, add_prefix_for_prod
 from datetime import datetime
 
 class History(db.Model):
     __tablename__ = 'history'
 
+    if environment == "production":
+        __table_args__ = {'schema': SCHEMA}
+
+
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    song_id = db.Column(db.Integer, db.ForeignKey('songs.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey(add_prefix_for_prod('users.id')), nullable=False)
+    song_id = db.Column(db.Integer, db.ForeignKey(add_prefix_for_prod('songs.id')), nullable=False)
     play_count = db.Column(db.Integer, default=0)
     first_played = db.Column(db.DateTime, nullable=False, default=datetime.now)
     last_played = db.Column(db.DateTime, nullable=True)

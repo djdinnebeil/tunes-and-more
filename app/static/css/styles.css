@@ -30,11 +30,12 @@ main {
 }
 
 footer {
+    margin-top: auto;
     text-align: center;
     padding: 1em;
     background: #333;
     color: white;
-    position: fixed;
+    position: relative;
     width: 100%;
     bottom: 0;
 }
@@ -73,4 +74,3 @@ footer {
 audio {
     margin-top: 10px;
 }
-

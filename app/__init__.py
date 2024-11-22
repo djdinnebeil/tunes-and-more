@@ -9,30 +9,32 @@ from app.routes.song_routes import song_routes
 
 from .config import Config
 
-def create_app():
-    app = Flask(__name__)
-
-    # Configuration
-    app.config.from_object(Config)
-
-    # Initialize extensions
-    db.init_app(app)
-    migrate = Migrate(app, db)
+from app.seeds import seed_commands
 
 
-    login_manager = LoginManager()
-    login_manager.init_app(app)
-    login_manager.login_view = 'auth.login'
+app = Flask(__name__)
 
-    @login_manager.user_loader
-    def load_user(user_id):
-        from app.models.user import User
-        return User.query.get(int(user_id))
+# Configuration
+app.config.from_object(Config)
 
-    # Register blueprints
-    app.register_blueprint(auth_routes)
-    app.register_blueprint(home_routes)
-    app.register_blueprint(song_routes, url_prefix='/songs')
+# Initialize extensions
+db.init_app(app)
+migrate = Migrate(app, db)
+
+app.cli.add_command(seed_commands)
+
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'auth.login'
+
+@login_manager.user_loader
+def load_user(user_id):
+    from app.models.user import User
+    return User.query.get(int(user_id))
+
+# Register blueprints
+app.register_blueprint(auth_routes)
+app.register_blueprint(home_routes)
+app.register_blueprint(song_routes, url_prefix='/songs')
 
 
-    return app

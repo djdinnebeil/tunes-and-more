@@ -10,7 +10,7 @@
     <ul>
         {% for song in songs %}
         <li>
-            <button onclick="loadSong('{{ song.file_url }}', '{{ song.name }}', '{{ song.artist }}', '{{ song.id }}')">
+            <button onclick="loadSong({{ song }})">
                 {{ song.name }} - {{ song.artist }}
             </button>
         </li>
@@ -28,20 +28,30 @@
 </div>
 
 <script>
-    function loadSong(fileUrl, songName, artistName, songId) {
-        // Update the audio player source and info
-        const audioPlayer = document.getElementById('audio-player');
-        const audioSource = document.getElementById('audio-source');
-        const songInfo = document.getElementById('song-info');
+function loadSong(song) {
+    console.log(`Loading song: ${song.name} by ${song.artist} from ${song.file_url}`);
 
-        audioSource.src = fileUrl;
-        audioPlayer.load(); // Reload the audio element to play the new source
-        songInfo.textContent = `Now Playing: ${songName} by ${artistName}`;
-        // Update play count via API
-        fetch(`/songs/play/${songId}`, { method: 'POST' })
-            .then(response => response.json())
-            .then(data => console.log(`Play count updated: ${data.play_count}`))
-            .catch(error => console.error('Error updating play count:', error));
-    }
+    const audioPlayer = document.getElementById('audio-player');
+    const audioSource = document.getElementById('audio-source');
+    const songInfo = document.getElementById('song-info');
+
+    audioSource.src = song.file_url;
+    audioPlayer.load();
+
+    audioPlayer.play().then(() => {
+        console.log('Playback started');
+    }).catch(error => {
+        console.error('Playback failed:', error);
+    });
+
+    songInfo.textContent = `Now Playing: ${song.name} by ${song.artist}`;
+
+    fetch(`/songs/play/${song.id}`, { method: 'POST' })
+        .then(response => response.json())
+        .then(data => console.log(`Play count updated: ${data.play_count}`))
+        .catch(error => console.error('Error updating play count:', error));
+}
+
 </script>
+
 {% endblock %}
