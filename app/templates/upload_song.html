@@ -1,0 +1,30 @@
+{% extends 'layout.html' %}
+
+{% block title %}Upload Song{% endblock %}
+
+{% block content %}
+<h1>Upload a Song</h1>
+<form action="/songs/upload" method="POST" enctype="multipart/form-data">
+    <label for="file">MP3 File:</label>
+    <input type="file" name="file" id="file" accept=".mp3" required>
+    <button type="submit">Extract Metadata</button>
+</form>
+
+{% if metadata %}
+<h2>Edit Song Details</h2>
+<form action="/songs/upload/save" method="POST">
+    <input type="hidden" name="file_path" value="{{ metadata.file_path }}">
+    <label for="name">Song Name:</label>
+    <input type="text" name="name" id="name" value="{{ metadata.name }}" required>
+    <label for="artist">Artist:</label>
+    <input type="text" name="artist" id="artist" value="{{ metadata.artist }}" required>
+    <label for="album">Album:</label>
+    <input type="text" name="album" id="album" value="{{ metadata.album }}">
+    <label for="genre">Genre:</label>
+    <input type="text" name="genre" id="genre" value="{{ metadata.genre }}">
+    <label for="duration">Duration (seconds):</label>
+    <input type="number" name="duration" id="duration" value="{{ metadata.duration }}" required>
+    <button type="submit">Save Song</button>
+</form>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,47 @@
+{% extends 'layout.html' %}
+
+{% block title %}Music Player{% endblock %}
+
+{% block content %}
+<h1>Your Music Player</h1>
+
+<div class="song-list">
+    <h2>Your Songs</h2>
+    <ul>
+        {% for song in songs %}
+        <li>
+            <button onclick="loadSong('{{ song.file_url }}', '{{ song.name }}', '{{ song.artist }}', '{{ song.id }}')">
+                {{ song.name }} - {{ song.artist }}
+            </button>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+
+<div class="player">
+    <h2>Now Playing</h2>
+    <p id="song-info">Select a song to play</p>
+    <audio id="audio-player" controls>
+        <source id="audio-source" src="" type="audio/mpeg">
+        Your browser does not support the audio element.
+    </audio>
+</div>
+
+<script>
+    function loadSong(fileUrl, songName, artistName, songId) {
+        // Update the audio player source and info
+        const audioPlayer = document.getElementById('audio-player');
+        const audioSource = document.getElementById('audio-source');
+        const songInfo = document.getElementById('song-info');
+
+        audioSource.src = fileUrl;
+        audioPlayer.load(); // Reload the audio element to play the new source
+        songInfo.textContent = `Now Playing: ${songName} by ${artistName}`;
+        // Update play count via API
+        fetch(`/songs/play/${songId}`, { method: 'POST' })
+            .then(response => response.json())
+            .then(data => console.log(`Play count updated: ${data.play_count}`))
+            .catch(error => console.error('Error updating play count:', error));
+    }
+</script>
+{% endblock %}

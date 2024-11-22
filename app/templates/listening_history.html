@@ -1,0 +1,27 @@
+{% extends 'layout.html' %}
+
+{% block title %}Listening History{% endblock %}
+
+{% block content %}
+<h1>Your Listening History</h1>
+<table>
+    <thead>
+        <tr>
+            <th>Song</th>
+            <th>Artist</th>
+            <th>Play Count</th>
+            <th>Last Played</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for entry in history %}
+        <tr>
+            <td>{{ entry.song.name }}</td>
+            <td>{{ entry.song.artist }}</td>
+            <td>{{ entry.play_count }}</td>
+            <td>{{ entry.last_played }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

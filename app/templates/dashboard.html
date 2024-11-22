@@ -1,0 +1,9 @@
+{% extends 'layout.html' %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<h1>Welcome, {{ user.username }}!</h1>
+<p>Your email: {{ user.email }}</p>
+<a href="/logout">Log Out</a>
+{% endblock %}
