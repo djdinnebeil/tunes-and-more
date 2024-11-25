@@ -36,5 +36,3 @@ def load_user(user_id):
 app.register_blueprint(auth_routes)
 app.register_blueprint(home_routes)
 app.register_blueprint(song_routes, url_prefix='/songs')
-
-

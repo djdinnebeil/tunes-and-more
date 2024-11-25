@@ -6,7 +6,10 @@ from flask_login import current_user, login_required
 from flask import send_from_directory
 from datetime import datetime
 import requests
-from .aws_routes import upload_file_to_s3, get_unique_filename
+from .aws_routes import upload_file_to_s3, get_unique_filename, remove_file_from_s3
+from sqlalchemy.orm import joinedload
+
+environment = os.getenv("FLASK_ENV")
 
 song_routes = Blueprint('songs', __name__)
 
@@ -33,29 +36,33 @@ def save_song():
     file = request.files.get('file')
     file.filename = f"{artist}-{album}-{name}.mp3".replace(" ", "_")
 
-    upload = upload_file_to_s3(file)
-
     if not file or not allowed_file(file.filename):
         return jsonify({'error': 'Invalid or missing file.'}), 400
 
-    # Send file and metadata to the secondary server
-    files = {'file': file}
-    data = {
-        'name': name,
-        'artist': artist,
-        'album': album
-    }
-    # response = requests.post('http://localhost:5000/upload', files=files, data=data)
+    if environment in ['production', 'aws-testing']:
+        upload = upload_file_to_s3(file)
+        if 'url' not in upload:
+            upload['errors'].append("File upload failed.")
+            return jsonify({'errors': upload['errors']}), 400
+        file_url = upload["url"]
+    else:
+        # Send file and metadata to the secondary server
+        files = {'file': file}
+        data = {
+            'name': name,
+            'artist': artist,
+            'album': album,
+            'filename': file.filename
+        }
+        response = requests.post('http://localhost:5000/upload', files=files, data=data)
 
-    # if response.status_code != 200:
-    #     return jsonify({'error': 'Failed to upload file to secondary server.'}), 500
+        if response.status_code != 200:
+            return jsonify({'error': 'Failed to upload file to secondary server.'}), 500
 
-    # Get file URL from the secondary server
-    # file_url = response.json().get('file_url', '')
-    # if not file_url:
-    #     return jsonify({'error': 'Secondary server did not return file URL.'}), 500
-
-    file_url = upload["url"]
+        # Get file URL from the secondary server
+        file_url = response.json().get('file_url', '')
+        if not file_url:
+            return jsonify({'error': 'Secondary server did not return file URL.'}), 500
 
     # Save song details in the database
     new_song = Song(
@@ -71,62 +78,6 @@ def save_song():
     db.session.commit()
 
     return jsonify(new_song.to_dict()), 201
-
-
-
-@song_routes.route('/upload/local', methods=['GET'])
-@login_required
-def upload_song_page_local():
-    # Default form render (empty fields)
-    return render_template('upload_song_local.html', metadata={})
-
-
-@song_routes.route('/upload/local/save', methods=['POST'])
-@login_required
-def save_song_local():
-    # Get metadata from the form
-    name = request.form.get('name', 'Unknown Title')
-    artist = request.form.get('artist', 'Unknown Artist')
-    album = request.form.get('album', None)
-    genre = request.form.get('genre', None)
-    duration = request.form.get('duration', 0)
-    file = request.files.get('file')
-
-    if not file or not allowed_file(file.filename):
-        return jsonify({'error': 'Invalid or missing file.'}), 400
-
-    # Send file and metadata to the secondary server
-    files = {'file': file}
-    data = {
-        'name': name,
-        'artist': artist,
-        'album': album
-    }
-    response = requests.post('http://localhost:5000/upload', files=files, data=data)
-
-    if response.status_code != 200:
-        return jsonify({'error': 'Failed to upload file to secondary server.'}), 500
-
-    # Get file URL from the secondary server
-    file_url = response.json().get('file_url', '')
-    if not file_url:
-        return jsonify({'error': 'Secondary server did not return file URL.'}), 500
-
-    # Save song details in the database
-    new_song = Song(
-        user_id=current_user.id,
-        name=name,
-        artist=artist,
-        album=album,
-        genre=genre,
-        duration=duration,
-        file_url=file_url
-    )
-    db.session.add(new_song)
-    db.session.commit()
-
-    return jsonify(new_song.to_dict()), 201
-
 
 
 @song_routes.route('/player', methods=['GET'])
@@ -157,7 +108,7 @@ def update_play_count(song_id):
 
     return jsonify(history.to_dict()), 200
 
-from sqlalchemy.orm import joinedload
+
 
 @song_routes.route('/history', methods=['GET'])
 @login_required
@@ -166,8 +117,6 @@ def view_history():
     history_data = [entry.to_dict() for entry in history]
     return render_template('listening_history.html', history=history_data)
 
-
-from .aws_routes import remove_file_from_s3
 
 
 @song_routes.route('/remove/<song_id>', methods=['GET'])
@@ -180,13 +129,23 @@ def delete_song(song_id):
     if song.user_id != current_user.id:
             return jsonify({"error": "Unauthorized"}), 403
 
-    removed = remove_file_from_s3(song.file_url)
-
-    if removed:
-        # Delete the song record
-        db.session.delete(song)
-        db.session.commit()
-        return jsonify({"message": "Song deleted successfully", "song_id": song_id, "name": song.name}), 200
+    if environment in ['production', 'aws-testing']:
+        removed = remove_file_from_s3(song.file_url)
+        if not removed:
+            return jsonify({"error": "AWS bucket delete error"}), 400
     else:
-        return jsonify({"error": "AWS bucket delete error"}), 400
+        # Local deletion logic
+        file_url = song.file_url
+        filename = file_url.split('/')[-1]  # Extract the filename from the URL
+        local_server_url = f"http://localhost:5000/files/{filename}"
+        print('local server url', local_server_url)
 
+
+        response = requests.delete(local_server_url)
+        if response.status_code != 200:
+            return jsonify({"error": f"Failed to delete file from local server: {response.json().get('error', 'Unknown error')}"}), 500
+
+    # Delete the song record
+    db.session.delete(song)
+    db.session.commit()
+    return jsonify({"message": "Song deleted successfully", "song_id": song_id, "name": song.name}), 200

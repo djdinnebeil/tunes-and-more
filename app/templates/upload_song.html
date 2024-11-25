@@ -27,6 +27,12 @@
         <button type="submit">Upload to Server</button>
     </form>
 </div>
+<div id="upload-status" style="display: none;">
+    <p>Uploading... Please wait.</p>
+    <div id="progress-bar" style="width: 100%; background-color: #ddd;">
+        <div id="progress" style="width: 0%; height: 20px; background-color: #4caf50;"></div>
+    </div>
+</div>
 
 <script>
 document.getElementById('extract-metadata').addEventListener('click', function () {
@@ -71,4 +77,36 @@ document.getElementById('extract-metadata').addEventListener('click', function (
 </script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jsmediatags/3.9.5/jsmediatags.min.js"></script>
+<script>
+    document.getElementById('save-song-form').addEventListener('submit', async function (e) {
+        e.preventDefault();
+
+        const formData = new FormData(this);
+        const progressBar = document.getElementById('progress');
+        const statusDiv = document.getElementById('upload-status');
+
+        // Show status and reset progress bar
+        statusDiv.style.display = 'block';
+        progressBar.style.width = '0%';
+
+        try {
+            const response = await fetch(this.action, {
+                method: 'POST',
+                body: formData
+            });
+
+            if (response.ok) {
+                progressBar.style.width = '100%';
+                alert('Upload successful!');
+            } else {
+                alert('Upload failed. Please try again.');
+            }
+        } catch (error) {
+            alert('An error occurred: ' + error.message);
+        } finally {
+            statusDiv.style.display = 'none';
+        }
+    });
+</script>
+
 {% endblock %}

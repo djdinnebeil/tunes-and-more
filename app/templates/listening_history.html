@@ -4,6 +4,10 @@
 
 {% block content %}
 <h1>Your Listening History</h1>
+
+{% if not history %}
+<p>You have no listening history yet. Start playing some music!</p>
+{% else %}
 <table>
     <thead>
         <tr>
@@ -24,4 +28,5 @@
         {% endfor %}
     </tbody>
 </table>
+{% endif %}
 {% endblock %}

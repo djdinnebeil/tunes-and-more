@@ -7,14 +7,40 @@ auth_routes = Blueprint('auth', __name__)
 @auth_routes.route('/signup', methods=['GET', 'POST'])
 def signup():
     if request.method == 'POST':
-        username = request.form.get('username')
-        email = request.form.get('email')
+        username = request.form.get('username').strip()
+        email = request.form.get('email').strip()
         password = request.form.get('password')
+
+        errors = []
+
+        # Check if username and email are at least 4 characters
+        if len(username) < 4:
+            errors.append("Username must be at least 4 characters.")
+        if len(email) < 4:
+            errors.append("Email must be at least 4 characters.")
+
+        # Check for duplicate username or email
+        if User.query.filter_by(username=username).first():
+            errors.append("Username is already taken.")
+        if User.query.filter_by(email=email).first():
+            errors.append("Email is already registered.")
+
+        # If there are errors, re-render the signup page with error messages
+        if errors:
+            return render_template('signup.html', errors=errors, form_data={'username': username, 'email':email})
+
+        # Create a new user if no errors
         user = User(username=username, email=email)
-        user.password = password  # Hashes the password
+        user.password = password  # Hash the password
         db.session.add(user)
         db.session.commit()
-        return redirect(url_for('auth.login'))
+
+        # Automatically log the user in
+        login_user(user)
+
+        # Redirect to the dashboard or homepage
+        return redirect(url_for('auth.dashboard'))
+
     return render_template('signup.html')
 
 @auth_routes.route('/login', methods=['GET', 'POST'])
@@ -52,3 +78,16 @@ def dashboard():
 def logout():
     logout_user()
     return redirect(url_for('auth.login'))
+
+
+@auth_routes.route('/demo-login', methods=['GET'])
+def demo_login():
+    user = User.query.filter_by(email="demo@aa.io").first()
+    # Validate the user and password
+    if not user:
+        return render_template('login.html', error="Demo user not found")
+
+    login_user(user)
+
+    # Redirect to a user dashboard or homepage
+    return redirect(url_for('auth.dashboard'))

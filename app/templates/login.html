@@ -11,6 +11,11 @@
     <input type="password" name="password" id="password" required>
     <button type="submit">Log In</button>
 </form>
+<br>
+<form action="/demo-login" method="GET">
+    <button type="submit">Log In as Demo User</button>
+</form>
+
 {% if error %}
 <p style="color: red;">{{ error }}</p>
 {% endif %}
