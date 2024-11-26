@@ -5,19 +5,6 @@
 {% block content %}
 <h1>Your Music Player</h1>
 
-<div class="song-list">
-    <h2>Your Songs</h2>
-    <ul>
-        {% for song in songs %}
-        <li>
-            <button onclick="loadSong({{ song }})">
-                {{ song.name }} - {{ song.artist }}
-            </button>
-        </li>
-        {% endfor %}
-    </ul>
-</div>
-
 <div class="player">
     <h2>Now Playing</h2>
     <p id="song-info">Select a song to play</p>
@@ -25,10 +12,53 @@
         <source id="audio-source" src="" type="audio/mpeg">
         Your browser does not support the audio element.
     </audio>
+    <div class="player-controls">
+        <button onclick="previousSong()">Previous</button>
+        <button onclick="nextSong()">Next</button>
+    </div>
 </div>
 
+<div class="song-list">
+    <h2>Your Songs</h2>
+<div class="songs-grid">
+
+<!--    {% for song in songs %}-->
+<!--    <div class="song-card-row">-->
+<!--    <div class="song-card">-->
+<!--        <button onclick="loadSong({{ song.id - 1 }})" class="play-button">-->
+<!--            <div class="song-details">-->
+<!--                <span class="song-name">{{ song.name }}</span>-->
+<!--                <span class="song-artist">{{ song.artist }}</span>-->
+<!--            </div>-->
+<!--        </button>-->
+<!--    </div>-->
+<!--            <button onclick="removeSong({{ song.id }})" class="remove-button">Remove</button>-->
+<!--    </div>-->
+<!--    {% endfor %}-->
+</div>
+
+</div>
+
+
+
 <script>
-function loadSong(song) {
+  let currentSongIndex = null; // Track the current song index
+let songs = []; // Updated dynamically from the server
+
+function loadSong(songIndex) {
+    if (songIndex < 0 || songIndex >= songs.length) {
+        console.error('Invalid song index');
+        return;
+    }
+
+    currentSongIndex = songIndex;
+    const song = songs[songIndex];
+
+    if (!song) {
+        console.error('Song not found');
+        return;
+    }
+
     console.log(`Loading song: ${song.name} by ${song.artist} from ${song.file_url}`);
 
     const audioPlayer = document.getElementById('audio-player');
@@ -52,6 +82,144 @@ function loadSong(song) {
         .catch(error => console.error('Error updating play count:', error));
 }
 
+function nextSong() {
+    if (currentSongIndex === null || songs.length === 0) {
+        console.log('No song is playing. Playing the first song.');
+        loadSong(0);
+        return;
+    }
+
+    let nextIndex = (currentSongIndex + 1) % songs.length;
+
+    while (!songs[nextIndex]) {
+        nextIndex = (nextIndex + 1) % songs.length;
+        if (nextIndex === currentSongIndex) {
+            console.log('No more valid songs to play.');
+            stopPlayback();
+            return;
+        }
+    }
+
+    loadSong(nextIndex);
+}
+
+function previousSong() {
+    if (currentSongIndex === null || songs.length === 0) {
+        console.log('No song is playing. Playing the last song.');
+        loadSong(songs.length - 1);
+        return;
+    }
+
+    let prevIndex = (currentSongIndex - 1 + songs.length) % songs.length;
+
+    while (!songs[prevIndex]) {
+        prevIndex = (prevIndex - 1 + songs.length) % songs.length;
+        if (prevIndex === currentSongIndex) {
+            console.log('No more valid songs to play.');
+            stopPlayback();
+            return;
+        }
+    }
+
+    loadSong(prevIndex);
+}
+
+function stopPlayback() {
+    const audioPlayer = document.getElementById('audio-player');
+    const audioSource = document.getElementById('audio-source');
+    const songInfo = document.getElementById('song-info');
+    audioPlayer.pause();
+    audioPlayer.currentTime = 0;
+    audioSource.src = '';
+    audioPlayer.load(); // Ensure the cleared source is reflected
+    songInfo.textContent = 'Select a song to play';
+    currentSongIndex = null;
+}
+
+function removeSong(songId) {
+    if (!confirm('Are you sure you want to remove this song?')) {
+        return;
+    }
+    let currentSongId = songs[currentSongIndex]?.id
+    fetch(`/songs/remove/${songId}`, { method: 'GET' })
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(err => {
+                    throw new Error(err.error || 'Failed to remove song');
+                });
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log(`Song removed successfully: ${data.song_id}`);
+
+            // Remove the song from the songs array
+            songs = songs.filter(song => song.id !== songId);
+
+            // Re-render the songs list
+            renderSongs(songs);
+
+            if (currentSongId === songId || currentSongId === 'undefined') {
+                console.log('current song removed');
+                stopPlayback();
+
+            }
+            // Check if the removed song is currently playing
+            if (currentSongIndex !== null && songs[currentSongIndex]?.id === songId) {
+                console.log('Currently playing song was removed. Stopping playback.');
+                stopPlayback();
+            }
+        })
+        .catch(error => {
+            console.error('Error removing song:', error);
+            alert('Failed to remove the song. Please try again.');
+        });
+}
+
+// Fetch songs for the current user
+fetch('/songs')
+    .then(response => response.json())
+    .then(data => {
+        songs = data; // Store the user's songs globally
+        renderSongs(data);
+    })
+    .catch(error => console.error('Error fetching songs:', error));
+
+function renderSongs(songs) {
+    const songsGrid = document.querySelector('.songs-grid');
+    songsGrid.innerHTML = ''; // Clear existing content
+
+    if (songs.length === 0 || songs === 'undefined') {
+        songsGrid.innerHTML = '<p>No songs added.</p>';
+    } else {
+        songs.forEach((song, index) => {
+            const songCardRow = document.createElement('div');
+            songCardRow.className = 'song-card-row';
+
+            songCardRow.innerHTML = `
+            <div class="song-card">
+                <button onclick="loadSong(${index})" class="play-button">
+                    <div class="song-details">
+                        <span class="song-name">${song.name}</span>
+                        <span class="song-artist">${song.artist}</span>
+                    </div>
+                </button>
+            </div>
+            <button onclick="removeSong(${song.id})" class="remove-button">Remove</button>
+        `;
+
+            songsGrid.appendChild(songCardRow);
+        });
+    }
+}
+
+// Automatically play the next song when the current song ends
+document.getElementById('audio-player').addEventListener('ended', () => {
+    console.log('Song ended. Playing the next song.');
+    nextSong();
+});
+
 </script>
 
 {% endblock %}
+

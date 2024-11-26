@@ -4,12 +4,14 @@
 
 {% block content %}
 <h1>Welcome to Tunes and More</h1>
-<p>Discover and play your favorite songs. Sign up or log in to get started.</p>
-<audio id="audio-player" controls>
-    <source id="audio-source" src="https://tunes-and-more-music.s3.us-east-1.amazonaws.com/b149714cebc842ee90e3b460737ecbc5.mp3" type="audio/mpeg">
-    Your browser does not support the audio element.
-</audio>
+{% if current_user.is_authenticated %}
+<p> Welcome, {{ current_user.username }}!</p>
 
+<br>
+<br>
+{% else %}
+<p>Discover and play your favorite songs. Sign up or log in to get started.</p>
 <a href="/signup">Get Started</a>
+{% endif %}
 {% endblock %}
 

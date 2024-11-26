@@ -4,6 +4,8 @@
 
 {% block content %}
 <h1>Upload a Song</h1>
+<br>
+<br>
 <form id="upload-form">
     <label for="file">MP3 File:</label>
     <input type="file" name="file" id="file" accept=".mp3" required>
@@ -32,6 +34,9 @@
     <div id="progress-bar" style="width: 100%; background-color: #ddd;">
         <div id="progress" style="width: 0%; height: 20px; background-color: #4caf50;"></div>
     </div>
+</div>
+<div id="success-message" style="display: none; color: green; margin-top: 20px;">
+    Song uploaded successfully!
 </div>
 
 <script>
@@ -78,35 +83,52 @@ document.getElementById('extract-metadata').addEventListener('click', function (
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jsmediatags/3.9.5/jsmediatags.min.js"></script>
 <script>
-    document.getElementById('save-song-form').addEventListener('submit', async function (e) {
-        e.preventDefault();
+document.getElementById('save-song-form').addEventListener('submit', async function (e) {
+    e.preventDefault();
 
-        const formData = new FormData(this);
-        const progressBar = document.getElementById('progress');
-        const statusDiv = document.getElementById('upload-status');
+    const formData = new FormData(this);
+    const progressBar = document.getElementById('progress');
+    const statusDiv = document.getElementById('upload-status');
+    const successMessage = document.getElementById('success-message');
+    const songName = document.getElementById('name').value;
+    const songArtist = document.getElementById('artist').value;
 
-        // Show status and reset progress bar
-        statusDiv.style.display = 'block';
-        progressBar.style.width = '0%';
 
-        try {
-            const response = await fetch(this.action, {
-                method: 'POST',
-                body: formData
-            });
+    // Show status and reset progress bar
+    statusDiv.style.display = 'block';
+    progressBar.style.width = '0%';
 
-            if (response.ok) {
-                progressBar.style.width = '100%';
-                alert('Upload successful!');
-            } else {
-                alert('Upload failed. Please try again.');
-            }
-        } catch (error) {
-            alert('An error occurred: ' + error.message);
-        } finally {
-            statusDiv.style.display = 'none';
+    try {
+        const response = await fetch(this.action, {
+            method: 'POST',
+            body: formData
+        });
+
+        if (response.ok) {
+            progressBar.style.width = '100%';
+            successMessage.textContent = `${songName} uploaded successfully!`;
+            successMessage.style.display = 'block';
+
+            // Reset the input fields
+            document.getElementById('save-song-form').reset();
+            document.getElementById('metadata-form').style.display = 'none';
+            document.getElementById('file').value = ''; // Reset file input
+        } else {
+            alert('Upload failed. Please try again.');
         }
-    });
+    } catch (error) {
+        alert('An error occurred: ' + error.message);
+    } finally {
+        statusDiv.style.display = 'none';
+    }
+});
+
+document.getElementById('file').addEventListener('change', function () {
+    const successMessage = document.getElementById('success-message');
+    successMessage.style.display = 'none';
+});
+
+
 </script>
 
 {% endblock %}

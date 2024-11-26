@@ -10,7 +10,7 @@ def seed_songs():
         album='OST',
         genre='RPG',
         duration=210,
-        file_url='https://tunes-and-more-music.s3.us-east-1.amazonaws.com/FF8-OST-Breezy.mp3'
+        file_url='http://localhost:5000/files/FF8-OST-Breezy.mp3'
     )
     song2 = Song(
         user_id=1,
@@ -19,7 +19,7 @@ def seed_songs():
         album='OST',
         genre='RPG',
         duration=180,
-        file_url='https://tunes-and-more-music.s3.us-east-1.amazonaws.com/FF8-OST-Compression_of_Time.mp3'
+        file_url='http://localhost:5000/files/FF8-OST-Compression_of_Time.mp3'
     )
     song3 = Song(
         user_id=2,
@@ -28,7 +28,7 @@ def seed_songs():
         album='OST',
         genre='RPG',
         duration=240,
-        file_url='https://tunes-and-more-music.s3.us-east-1.amazonaws.com/FF8-OST-Ending_Theme.mp3'
+        file_url='http://localhost:5000/files/FF8-OST-Ending_Theme.mp3'
     )
     song4 = Song(
         user_id=2,
@@ -37,7 +37,7 @@ def seed_songs():
         album='OST',
         genre='RPG',
         duration=240,
-        file_url='https://tunes-and-more-music.s3.us-east-1.amazonaws.com/FF8-OST-Eyes_on_Me.mp3'
+        file_url='http://localhost:5000/files/FF8-OST-Eyes_on_Me.mp3'
     )
     song5 = Song(
         user_id=3,
@@ -46,7 +46,7 @@ def seed_songs():
         album='OST',
         genre='RPG',
         duration=240,
-        file_url='https://tunes-and-more-music.s3.us-east-1.amazonaws.com/FF8-OST-Junction.mp3'
+        file_url='http://localhost:5000/files/FF8-OST-Junction.mp3'
     )
     db.session.add(song1)
     db.session.add(song2)

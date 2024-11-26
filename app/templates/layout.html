@@ -5,27 +5,31 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Tunes and More{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
 </head>
 <body>
-    <header>
-        <nav>
-            <a href="/">Home</a>
-            <a href="/songs/upload">Upload Song</a>
-            <a href="/songs/player">Music Player</a>
-            <a href="/songs/history">Listening History</a>
-            {% if current_user.is_authenticated %}
-                <a href="/logout">Logout</a>
-            {% else %}
-                <a href="/login">Login</a>
-                <a href="/signup">Sign Up</a>
-            {% endif %}
-        </nav>
-    </header>
-    <main>
-        {% block content %}{% endblock %}
-    </main>
+    <div class="wrapper">
+        <header>
+            <nav>
+                <a href="/">Home</a>
+                <a href="/songs/upload">Upload Song</a>
+                <a href="/songs/player">Music Player</a>
+                <a href="/songs/history">Listening History</a>
+                {% if current_user.is_authenticated %}
+                    <a href="/logout">Logout</a>
+                {% else %}
+                    <a href="/login">Login</a>
+                    <a href="/signup">Sign Up</a>
+                {% endif %}
+            </nav>
+        </header>
+        <main>
+            {% block content %}{% endblock %}
+        </main>
+    </div>
     <footer>
         <p>&copy; 2024 Tunes and More Music Player</p>
     </footer>
 </body>
+
 </html>

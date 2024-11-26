@@ -80,13 +80,21 @@ def save_song():
     return jsonify(new_song.to_dict()), 201
 
 
+
 @song_routes.route('/player', methods=['GET'])
 @login_required
 def music_player():
     # Fetch all songs uploaded by the current user
-    songs = Song.query.all()
+    songs = Song.query.filter_by(user_id=current_user.id).all()
     serialized_songs = [song.to_dict() for song in songs]  # Serialize the Song objects
     return render_template('music_player.html', songs=serialized_songs)
+
+
+@song_routes.route('/', methods=['GET'])
+@login_required
+def get_songs():
+    songs = Song.query.filter_by(user_id=current_user.id).all()  # Filter songs by user
+    return jsonify([song.to_dict() for song in songs])
 
 
 
@@ -110,19 +118,14 @@ def update_play_count(song_id):
 
 
 
-@song_routes.route('/history', methods=['GET'])
-@login_required
-def view_history():
-    history = History.query.options(joinedload(History.song)).filter_by(user_id=current_user.id).order_by(History.last_played.desc()).all()
-    history_data = [entry.to_dict() for entry in history]
-    return render_template('listening_history.html', history=history_data)
-
 
 
 @song_routes.route('/remove/<song_id>', methods=['GET'])
 @login_required
 def delete_song(song_id):
-    song = Song.query.filter_by(id=song_id).first()
+    # song = Song.query.filter_by(id=song_id).first()
+    song = Song.query.get(song_id)
+
     if not song:
         return jsonify({"error": "Song not found"}), 404
 
@@ -149,3 +152,38 @@ def delete_song(song_id):
     db.session.delete(song)
     db.session.commit()
     return jsonify({"message": "Song deleted successfully", "song_id": song_id, "name": song.name}), 200
+
+
+
+@song_routes.route('/history', methods=['GET'])
+@login_required
+def view_history():
+    history = History.query.options(joinedload(History.song)).filter_by(user_id=current_user.id).order_by(History.last_played.desc()).all()
+    history_data = [entry.to_dict() for entry in history]
+    return render_template('listening_history.html', history=history_data)
+
+
+
+@song_routes.route('/history/reset/<int:history_id>', methods=['POST'])
+@login_required
+def reset_play_count(history_id):
+    history_entry = History.query.filter_by(user_id=current_user.id, id=history_id).first()
+    if not history_entry:
+        return jsonify({"error": "History entry not found"}), 404
+
+    history_entry.play_count = 0
+    db.session.commit()
+    return jsonify({"message": "Play count reset successfully", "history_id": history_id}), 200
+
+
+@song_routes.route('/history/remove/<int:history_id>', methods=['DELETE'])
+@login_required
+def remove_from_history(history_id):
+    history_entry = History.query.filter_by(user_id=current_user.id, id=history_id).first()
+    if not history_entry:
+        return jsonify({"error": "History entry not found"}), 404
+
+    db.session.delete(history_entry)
+    db.session.commit()
+    return jsonify({"message": "Song removed from history", "song_id": history_id}), 200
+

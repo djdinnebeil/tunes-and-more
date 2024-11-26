@@ -25,8 +25,10 @@ class History(db.Model):
             'user_id': self.user_id,
             'song_id': self.song_id,
             'play_count': self.play_count,
-            'first_played': self.first_played.isoformat() if self.first_played else None,
-            'last_played': self.last_played.isoformat() if self.last_played else None,
+            # 'first_played': self.first_played.isoformat() if self.first_played else None,
+            # 'last_played': self.last_played.isoformat() if self.last_played else None,
+            'first_played': self.first_played.strftime('%b %d, %Y %I:%M %p') if self.first_played else None,
+            'last_played': self.last_played.strftime('%b %d, %Y %I:%M %p') if self.last_played else None,
             'song': {
                 'name': self.song.name,
                 'artist': self.song.artist
