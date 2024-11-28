@@ -40,6 +40,12 @@ def save_song():
         return jsonify({'error': 'Invalid or missing file.'}), 400
 
     if environment in ['production', 'aws-testing']:
+        pre_url = f'https://tunes-and-more-music.s3.us-east-1.amazonaws.com/{file.filename}'
+        check_for_duplicate = Song.query.filter_by(file_url=pre_url).first()
+
+        if check_for_duplicate is not None:
+            return jsonify({'errors': 'A song with this file url already exists'}), 409
+
         upload = upload_file_to_s3(file)
         if 'url' not in upload:
             upload['errors'].append("File upload failed.")
@@ -54,6 +60,12 @@ def save_song():
             'album': album,
             'filename': file.filename
         }
+        pre_url = f'http://localhost:5000/files/{file.filename}'
+        check_for_duplicate = Song.query.filter_by(file_url=pre_url).first()
+
+        if check_for_duplicate is not None:
+            return jsonify({'errors': 'A song with this file url already exists'}), 409
+
         response = requests.post('http://localhost:5000/upload', files=files, data=data)
 
         if response.status_code != 200:

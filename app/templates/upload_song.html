@@ -38,6 +38,11 @@
 <div id="success-message" style="display: none; color: green; margin-top: 20px;">
     Song uploaded successfully!
 </div>
+<div id="error-message" style="display: none; color: red; margin-top: 20px;">
+    <!-- Error message will appear here -->
+</div>
+
+
 
 <script>
 document.getElementById('extract-metadata').addEventListener('click', function () {
@@ -92,7 +97,11 @@ document.getElementById('save-song-form').addEventListener('submit', async funct
     const successMessage = document.getElementById('success-message');
     const songName = document.getElementById('name').value;
     const songArtist = document.getElementById('artist').value;
+    const errorMessageDiv = document.getElementById('error-message');
 
+    // Clear error message before submission
+    errorMessageDiv.style.display = 'none';
+    errorMessageDiv.textContent = '';
 
     // Show status and reset progress bar
     statusDiv.style.display = 'block';
@@ -114,10 +123,15 @@ document.getElementById('save-song-form').addEventListener('submit', async funct
             document.getElementById('metadata-form').style.display = 'none';
             document.getElementById('file').value = ''; // Reset file input
         } else {
-            alert('Upload failed. Please try again.');
+            // Handle error response
+            const errorData = await response.json();
+            const errorMessage = errorData.errors || 'Upload failed. Please try again.';
+            errorMessageDiv.textContent = errorMessage;
+            errorMessageDiv.style.display = 'block';
         }
     } catch (error) {
-        alert('An error occurred: ' + error.message);
+        errorMessageDiv.textContent = 'An unexpected error occurred: ' + error.message;
+        errorMessageDiv.style.display = 'block';
     } finally {
         statusDiv.style.display = 'none';
     }
@@ -125,9 +139,19 @@ document.getElementById('save-song-form').addEventListener('submit', async funct
 
 document.getElementById('file').addEventListener('change', function () {
     const successMessage = document.getElementById('success-message');
+    const errorMessageDiv = document.getElementById('error-message');
     successMessage.style.display = 'none';
+    errorMessageDiv.style.display = 'none';
 });
 
+const metadataInputs = document.querySelectorAll('#metadata-form input');
+metadataInputs.forEach(input => {
+    input.addEventListener('input', () => {
+        const errorMessageDiv = document.getElementById('error-message');
+        errorMessageDiv.style.display = 'none';
+        errorMessageDiv.textContent = '';
+    });
+});
 
 </script>
 
