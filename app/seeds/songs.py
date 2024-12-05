@@ -2,7 +2,7 @@ from app.models.db import db, environment, SCHEMA
 from app.models import Song
 from sqlalchemy.sql import text
 
-# https://tunes-and-more-music.s3.us-east-1.amazonaws.com/
+# http://localhost:5000/files/
 # https://tunes-and-more-music.s3.us-east-1.amazonaws.com/
 
 def seed_songs():
