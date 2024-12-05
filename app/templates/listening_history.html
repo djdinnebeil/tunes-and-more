@@ -23,11 +23,15 @@
     <tr data-history-id="{{ entry.id }}">
             <td class="text-left-align">{{ entry.song.name }}</td>
             <td>{{ entry.song.artist }}</td>
-            <td  class="play-count">{{ entry.play_count }}</td>
-            <td>{{ entry.last_played }}</td>
+            <td class="play-count">{{ entry.play_count }}</td>
+            <td class="last-played">{{ entry.last_played if entry.last_played else '' }}</td>
             <td>
-                <button onclick="resetPlayCount({{ entry.id }})" class="reset-button">Reset Play Count</button>
-                <button onclick="removeFromHistory({{ entry.id }})" class="remove-button">Remove</button>
+              {% if entry.play_count == 0 %}
+                <button onclick="resetPlayCount({{ entry.id }})" class="reset-button-disabled" disabled>Reset Play Count</button>
+              {% else %}
+                 <button onclick="resetPlayCount({{ entry.id }})" class="reset-button">Reset Play Count</button>
+              {% endif %}
+              <button onclick="removeFromHistory({{ entry.id }})" class="remove-button">Remove</button>
             </td>
         </tr>
             {% endfor %}
@@ -38,9 +42,16 @@
 {% endif %}
 
 <script>
-    function resetPlayCount(historyId) {
+function resetPlayCount(historyId) {
     if (!confirm('Are you sure you want to reset the play count for this song?')) {
         return;
+    }
+
+    // Find and disable the button immediately
+    const resetButton = document.querySelector(`tr[data-history-id="${historyId}"] .reset-button`);
+    if (resetButton) {
+        resetButton.disabled = true;
+        resetButton.textContent = 'Processing...'; // Optional: Show a loading message
     }
 
     fetch(`/songs/history/reset/${historyId}`, { method: 'POST' })
@@ -55,17 +66,35 @@
         .then(data => {
             console.log(data.message);
             // Update the play count in the UI
-             const playCountCell = document.querySelector(`tr[data-history-id="${historyId}"] .play-count`);
+            const playCountCell = document.querySelector(`tr[data-history-id="${historyId}"] .play-count`);
             if (playCountCell) {
                 playCountCell.textContent = '0';
             }
+            const lastPlayedCell = document.querySelector(`tr[data-history-id="${historyId}"] .last-played`);
+            if (lastPlayedCell) {
+                lastPlayedCell.textContent = '';
+            }
 
+            // Update the button to its disabled state
+            if (resetButton) {
+                resetButton.textContent = 'Reset Play Count'; // Reset the button text
+                resetButton.disabled = true; // Keep it disabled since play count is 0
+                resetButton.classList.add('reset-button-disabled');
+                resetButton.classList.remove('reset-button');
+            }
         })
         .catch(error => {
             console.error('Error resetting play count:', error);
             alert('Failed to reset play count. Please try again.');
+
+            // Re-enable the button if there was an error
+            if (resetButton) {
+                resetButton.disabled = false;
+                resetButton.textContent = 'Reset Play Count';
+            }
         });
 }
+
 
 function removeFromHistory(historyId) {
     if (!confirm('Are you sure you want to remove this song from your history?')) {

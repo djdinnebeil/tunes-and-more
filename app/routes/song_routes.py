@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify, current_app, render_template
 from werkzeug.utils import secure_filename
 import os
-from app.models import db, Song, History
+from app.models import db, Song, History, Playlist
 from flask_login import current_user, login_required
 from flask import send_from_directory
 from datetime import datetime
@@ -35,6 +35,8 @@ def save_song():
     duration = request.form.get('duration', 0)
     file = request.files.get('file')
     file.filename = f"{artist}-{album}-{name}.mp3".replace(" ", "_")
+
+
 
     if not file or not allowed_file(file.filename):
         return jsonify({'error': 'Invalid or missing file.'}), 400
@@ -89,6 +91,16 @@ def save_song():
     db.session.add(new_song)
     db.session.commit()
 
+    # Create a history entry for the uploaded song with play_count=0
+    new_history = History(
+        user_id=current_user.id,
+        song_id=new_song.id,
+        play_count=0,
+        last_played=None
+    )
+    db.session.add(new_history)
+    db.session.commit()
+
     return jsonify(new_song.to_dict()), 201
 
 
@@ -98,8 +110,9 @@ def save_song():
 def music_player():
     # Fetch all songs uploaded by the current user
     songs = Song.query.filter_by(user_id=current_user.id).all()
+    playlists = Playlist.query.filter_by(user_id=current_user.id).all()
     serialized_songs = [song.to_dict() for song in songs]  # Serialize the Song objects
-    return render_template('music_player.html', songs=serialized_songs)
+    return render_template('music_player.html', songs=serialized_songs, playlists=playlists)
 
 
 @song_routes.route('/', methods=['GET'])
@@ -127,8 +140,6 @@ def update_play_count(song_id):
     db.session.commit()
 
     return jsonify(history.to_dict()), 200
-
-
 
 
 
@@ -170,7 +181,7 @@ def delete_song(song_id):
 @song_routes.route('/history', methods=['GET'])
 @login_required
 def view_history():
-    history = History.query.options(joinedload(History.song)).filter_by(user_id=current_user.id).order_by(History.last_played.desc()).all()
+    history = History.query.options(joinedload(History.song)).filter_by(user_id=current_user.id).order_by(History.play_count.desc()).all()
     history_data = [entry.to_dict() for entry in history]
     return render_template('listening_history.html', history=history_data)
 
@@ -184,6 +195,8 @@ def reset_play_count(history_id):
         return jsonify({"error": "History entry not found"}), 404
 
     history_entry.play_count = 0
+    history_entry.last_played = None
+
     db.session.commit()
     return jsonify({"message": "Play count reset successfully", "history_id": history_id}), 200
 
@@ -199,3 +212,42 @@ def remove_from_history(history_id):
     db.session.commit()
     return jsonify({"message": "Song removed from history", "song_id": history_id}), 200
 
+
+@song_routes.route('/upload/history', methods=['GET'])
+@login_required
+def upload_history():
+    upload_history = Song.query.filter_by(user_id=current_user.id).order_by(Song.created_at).all()
+    if not upload_history:
+        return []
+    upload_history_data = [entry.to_dict() for entry in upload_history]
+    return upload_history_data
+
+
+@song_routes.route('/update/<int:song_id>', methods=['PATCH'])
+@login_required
+def update_song(song_id):
+    song = Song.query.get(song_id)
+
+    if not song:
+        return jsonify({"error": "Song not found"}), 404
+
+    if song.user_id != current_user.id:
+        return jsonify({"error": "Unauthorized"}), 403
+
+    # Get updated details from the request
+    name = request.json.get('name', song.name)
+    artist = request.json.get('artist', song.artist)
+    album = request.json.get('album', song.album)
+    genre = request.json.get('genre', song.genre)
+    duration = request.json.get('duration', song.duration)
+
+    # Update song details
+    song.name = name
+    song.artist = artist
+    song.album = album
+    song.genre = genre
+    song.duration = duration
+
+    db.session.commit()
+
+    return jsonify(song.to_dict()), 200

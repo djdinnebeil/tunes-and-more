@@ -6,6 +6,7 @@ from app.models import db
 from app.routes.auth_routes import auth_routes
 from app.routes.home_routes import home_routes
 from app.routes.song_routes import song_routes
+from app.routes.playlist_routes import playlist_routes
 
 from .config import Config
 
@@ -36,3 +37,5 @@ def load_user(user_id):
 app.register_blueprint(auth_routes)
 app.register_blueprint(home_routes)
 app.register_blueprint(song_routes, url_prefix='/songs')
+app.register_blueprint(playlist_routes, url_prefix='/playlists')
+

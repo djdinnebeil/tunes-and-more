@@ -21,6 +21,7 @@ class User(db.Model, UserMixin):
     # Relationships
     songs = db.relationship('Song', back_populates='user', cascade='all, delete-orphan')
     history = db.relationship('History', back_populates='user', cascade='all, delete-orphan')
+    playlists = db.relationship('Playlist', back_populates='user', cascade='all, delete-orphan')
 
     @property
     def password(self):

@@ -1,0 +1,115 @@
+{% extends 'layout.html' %}
+{% block title %}Playlists{% endblock %}
+
+{% block content %}
+  <h1>Your Playlists</h1>
+
+  <!-- Add new playlist button -->
+  <div style="margin-bottom: 20px;">
+    <a href="{{ url_for('playlists.create_playlist_form') }}" class="btn btn-primary" style="text-decoration: none;">
+      + Create New Playlist
+    </a>
+  </div>
+
+  <ul style="list-style-type: none; padding: 0;">
+    {% for playlist in playlists %}
+    <li id="playlist-{{ playlist.id }}" style="margin-bottom: 20px; text-align: left;">
+      <h2>
+        <a href="{{ url_for('playlists.get_playlist', playlist_id=playlist.id) }}" style="text-decoration: none; color: #007bff;">
+          {{ playlist.name }}
+        </a>
+      </h2>
+      <p>{{ playlist.description }}</p>
+      <p>Created At: {{ playlist.created_at }}</p>
+      <ul style="list-style-type: disc; margin-left: 20px;">
+        <li>Songs:</li>
+        {% for song in playlist.songs %}
+        <li>{{ song.name }} by {{ song.artist }}</li>
+        {% endfor %}
+      </ul>
+
+      <!-- Edit and Remove buttons -->
+      <a href="{{ url_for('playlists.edit_playlist_form', playlist_id=playlist.id) }}" class="btn btn-secondary" style="text-decoration: none;">
+        Edit Playlist
+      </a>
+      <button class="btn btn-danger" onclick="deletePlaylist({{ playlist.id }})">Remove Playlist</button>
+    </li>
+    {% endfor %}
+  </ul>
+
+  <style>
+    .btn {
+        display: inline-block;
+        padding: 0.5rem 1rem;
+        font-size: 1rem;
+        color: #fff;
+        background-color: #007bff;
+        border: none;
+        border-radius: 4px;
+        text-align: center;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+
+    .btn:hover {
+        background-color: #0056b3;
+    }
+
+    .btn-secondary {
+        background-color: #6c757d;
+    }
+
+    .btn-secondary:hover {
+        background-color: #5a6268;
+    }
+
+    .btn-danger {
+        background-color: #dc3545;
+    }
+
+    .btn-danger:hover {
+        background-color: #c82333;
+    }
+
+    ul {
+        margin: 0;
+        padding: 0;
+    }
+
+    li {
+        margin-bottom: 10px;
+    }
+  </style>
+
+<script>
+  function deletePlaylist(playlistId) {
+    if (!confirm('Are you sure you want to delete this playlist?')) {
+      return;
+    }
+
+    fetch(`/playlists/${playlistId}/delete`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' }
+    })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Failed to delete playlist');
+      }
+      return response.json();
+    })
+    .then(data => {
+      // alert(data.message);
+
+      // Remove the playlist from the DOM
+      const playlistElement = document.getElementById(`playlist-${playlistId}`);
+      if (playlistElement) {
+        playlistElement.remove();
+      }
+    })
+    .catch(error => {
+      console.error('Error deleting playlist:', error);
+      alert(error.message);
+    });
+  }
+</script>
+{% endblock %}

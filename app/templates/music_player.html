@@ -17,6 +17,14 @@
         <button onclick="nextSong()">Next</button>
     </div>
 </div>
+<div class="dropdown">
+    <button class="dropdown-button">Select Playlist</button>
+    <div class="dropdown-content">
+        {% for playlist in playlists %}
+        <a href="{{ url_for('playlists.get_playlist', playlist_id=playlist.id) }}">{{ playlist.name }}</a>
+        {% endfor %}
+    </div>
+</div>
 
 <div class="song-list">
     <h2>Your Songs</h2>
@@ -39,6 +47,48 @@
 
 </div>
 
+<style>
+    .dropdown {
+        position: relative;
+        display: inline-block;
+    }
+
+    .dropdown-button {
+        background-color: #007bff;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        cursor: pointer;
+    }
+
+    .dropdown-content {
+        display: none;
+        position: absolute;
+        background-color: #f9f9f9;
+        min-width: 200px;
+        box-shadow: 0px 8px 16px rgba(0,0,0,0.2);
+        z-index: 1;
+    }
+
+    .dropdown-content a {
+        color: black;
+        padding: 12px 16px;
+        text-decoration: none;
+        display: block;
+    }
+
+    .dropdown-content a:hover {
+        background-color: #ddd;
+    }
+
+    .dropdown:hover .dropdown-content {
+        display: block;
+    }
+
+    .dropdown:hover .dropdown-button {
+        background-color: #0056b3;
+    }
+</style>
 
 
 <script>
