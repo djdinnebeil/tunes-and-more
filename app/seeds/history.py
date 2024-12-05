@@ -25,10 +25,37 @@ def seed_history():
         first_played=datetime(2024, 2, 15),
         last_played=datetime(2024, 11, 22)
     )
-
+    history4 = History(
+        user_id=1,
+        song_id=6,
+        play_count=0,
+        first_played=datetime(2024, 2, 15)
+    )
+    history5 = History(
+        user_id=1,
+        song_id=7,
+        play_count=0,
+        first_played=datetime(2024, 2, 15)
+    )
+    history6 = History(
+        user_id=1,
+        song_id=8,
+        play_count=0,
+        first_played=datetime(2024, 2, 15)
+    )
+    history7 = History(
+        user_id=1,
+        song_id=9,
+        play_count=0,
+        first_played=datetime(2024, 2, 15)
+    )
     db.session.add(history1)
     db.session.add(history2)
     db.session.add(history3)
+    db.session.add(history4)
+    db.session.add(history5)
+    db.session.add(history6)
+    db.session.add(history7)
     db.session.commit()
 
 def undo_history():
