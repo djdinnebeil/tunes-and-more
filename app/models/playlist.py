@@ -1,6 +1,15 @@
 from .db import db, environment, SCHEMA, add_prefix_for_prod
 from datetime import datetime
 
+# Association table for playlists and songs
+playlist_songs = db.Table(
+    'playlist_songs',
+    db.Model.metadata,
+    db.Column('playlist_id', db.Integer, db.ForeignKey(add_prefix_for_prod('playlists.id')), primary_key=True),
+    db.Column('song_id', db.Integer, db.ForeignKey(add_prefix_for_prod('songs.id')), primary_key=True),
+    schema=SCHEMA if environment == "production" else None
+)
+
 class Playlist(db.Model):
     __tablename__ = 'playlists'
 
@@ -16,7 +25,7 @@ class Playlist(db.Model):
 
     # Relationships
     user = db.relationship('User', back_populates='playlists')
-    songs = db.relationship('Song', secondary='playlist_songs', back_populates='playlists')
+    songs = db.relationship('Song', secondary=playlist_songs, back_populates='playlists')
 
     def to_dict(self):
         return {
@@ -29,11 +38,4 @@ class Playlist(db.Model):
             'songs': [song.to_dict() for song in self.songs]
         }
 
-# Association table for playlists and songs
-playlist_songs = db.Table(
-    'playlist_songs',
-    db.Model.metadata,
-    db.Column('playlist_id', db.Integer, db.ForeignKey(add_prefix_for_prod('playlists.id')), primary_key=True),
-    db.Column('song_id', db.Integer, db.ForeignKey(add_prefix_for_prod('songs.id')), primary_key=True),
-    schema=SCHEMA if environment == "production" else None
-)
+
