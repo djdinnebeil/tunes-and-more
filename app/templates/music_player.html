@@ -30,19 +30,7 @@
     <h2>Your Songs</h2>
 <div class="songs-grid">
 
-<!--    {% for song in songs %}-->
-<!--    <div class="song-card-row">-->
-<!--    <div class="song-card">-->
-<!--        <button onclick="loadSong({{ song.id - 1 }})" class="play-button">-->
-<!--            <div class="song-details">-->
-<!--                <span class="song-name">{{ song.name }}</span>-->
-<!--                <span class="song-artist">{{ song.artist }}</span>-->
-<!--            </div>-->
-<!--        </button>-->
-<!--    </div>-->
-<!--            <button onclick="removeSong({{ song.id }})" class="remove-button">Remove</button>-->
-<!--    </div>-->
-<!--    {% endfor %}-->
+
 </div>
 
 </div>
@@ -58,14 +46,18 @@
         color: white;
         padding: 10px 20px;
         border: none;
+        border-radius: 42px;
         cursor: pointer;
+        width: 600px;
+        height: 50px;
+        font-size: 1.2rem;
     }
 
     .dropdown-content {
         display: none;
         position: absolute;
         background-color: #f9f9f9;
-        min-width: 200px;
+        width: 600px;
         box-shadow: 0px 8px 16px rgba(0,0,0,0.2);
         z-index: 1;
     }
@@ -255,7 +247,8 @@ function renderSongs(songs) {
                     </div>
                 </button>
             </div>
-            <button onclick="removeSong(${song.id})" class="remove-button">Remove</button>
+            &nbsp;
+            <button onclick="removeSong(${song.id})" class="remove-button">Delete</button>
         `;
 
             songsGrid.appendChild(songCardRow);

@@ -250,6 +250,10 @@ footer {
     border-radius: 5px;
 }
 
+.reset-button-disabled {
+    padding: 5px 10px;
+}
+
 .reset-button:hover {
     background-color: #d1ecf1;
     color: #0c5460;

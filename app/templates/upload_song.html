@@ -6,79 +6,164 @@
 <h1>Upload a Song</h1>
 
 <form id="upload-form">
-    <label for="file">MP3 File:</label>
-    <input type="file" name="file" id="file" accept=".mp3" required>
-    <button type="button" id="extract-metadata">Extract Metadata</button>
+  <label for="file">MP3 File:</label>
+  <input type="file" name="file" id="file" accept=".mp3" required>
+  <button type="button" id="extract-metadata">Extract Metadata</button>
 </form>
 
 <div id="metadata-form" style="display: none;">
-    <h2>Edit Song Details</h2>
-    <form id="save-song-form" action="/songs/upload/save" method="POST" enctype="multipart/form-data">
-        <input type="file" name="file" id="file-hidden" style="display: none;">
-        <label for="name">Song Name:</label>
-        <input type="text" name="name" id="name" required>
-        <label for="artist">Artist:</label>
-        <input type="text" name="artist" id="artist" required>
-        <label for="album">Album:</label>
-        <input type="text" name="album" id="album">
-        <label for="genre">Genre:</label>
-        <input type="text" name="genre" id="genre">
-        <label for="duration">Duration (seconds):</label>
-        <input type="number" name="duration" id="duration" readonly required>
-        <button type="submit">Upload to Server</button>
-    </form>
+  <h2>Edit Song Details</h2>
+  <form id="save-song-form" action="/songs/upload/save" method="POST" enctype="multipart/form-data">
+    <input type="file" name="file" id="file-hidden" style="display: none;">
+    <label for="name">Song Name:</label>
+    <input type="text" name="name" id="name" required>
+    <label for="artist">Artist:</label>
+    <input type="text" name="artist" id="artist" required>
+    <label for="album">Album:</label>
+    <input type="text" name="album" id="album">
+    <label for="genre">Genre:</label>
+    <input type="text" name="genre" id="genre">
+    <label for="duration">Duration (seconds):</label>
+    <input type="number" name="duration" id="duration" readonly required>
+    <button type="submit">Upload to Server</button>
+  </form>
 </div>
 
 <div id="upload-status" style="display: none;">
-    <p>Uploading... Please wait.</p>
-    <div id="progress-bar" style="width: 100%; background-color: #ddd;">
-        <div id="progress" style="width: 0%; height: 20px; background-color: #4caf50;"></div>
-    </div>
+  <p>Uploading... Please wait.</p>
+  <div id="progress-bar" style="width: 100%; background-color: #ddd;">
+    <div id="progress" style="width: 0%; height: 20px; background-color: #4caf50;"></div>
+  </div>
 </div>
 <div id="success-message" style="display: none; color: green; margin-top: 20px;">
-    Song uploaded successfully!
+  Song uploaded successfully!
 </div>
 <div id="error-message" style="display: none; color: red; margin-top: 20px;">
-    <!-- Error message will appear here -->
+  <!-- Error message will appear here -->
 </div>
-
+<br/><br/>
 <h2>Your Songs</h2>
 <div id="song-list">
-    <p>Loading your songs...</p>
+  <p>Loading your songs...</p>
 </div>
+<style>
+/* Song Row Styling */
+.song-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #f9f9f9;
+  padding: 15px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.song-row:hover {
+  transform: scale(1.02);
+  box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Song Details Styling */
+.song-details {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
+  gap: 10px;
+  align-items: center;
+  flex-grow: 1;
+  text-align: left;
+}
+
+.song-name {
+  font-size: 1em;
+  font-weight: bold;
+  color: #333;
+}
+
+.song-artist, .song-album, .song-genre, .song-duration {
+  font-size: 0.9em;
+  color: #555;
+}
+
+/* Button Container */
+.song-actions {
+  display: flex;
+  gap: 10px;
+}
+
+/* Button Styling */
+.action-button {
+  padding: 8px 12px;
+  font-size: 0.9em;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.update-btn {
+  background-color: #4caf50;
+  color: white;
+}
+
+.update-btn:hover {
+  background-color: #45a049;
+}
+
+.remove-btn {
+  background-color: #f44336;
+  color: white;
+}
+
+.remove-btn:hover {
+  background-color: #e53935;
+}
+
+.update-form label {
+  margin-left: 35px;
+}
+
+.duration-label {
+  background-color: lightgray;
+  margin-right: 25px;
+}
+
+</style>
+
 
 <script>
-    let songs = [];
-    let currentEditIndex = null; // Track the currently edited song
+  let songs = [];
+  let currentEditIndex = null; // Track the currently edited song
 
-    // Fetch and render the user's songs
-    function fetchSongs() {
-        fetch('/songs/upload/history')
-            .then(response => response.json())
-            .then(data => {
-                songs = data; // Populate the global `songs` array
-                renderSongList(data);
-            })
-            .catch(error => {
-                console.error('Error fetching songs:', error);
-                document.getElementById('song-list').innerHTML = '<p>You have no songs.</p>';
-            });
-    }
+  // Fetch and render the user's songs
+  function fetchSongs() {
+    fetch('/songs/upload/history')
+      .then(response => response.json())
+      .then(data => {
+        songs = data; // Populate the global `songs` array
+        renderSongList(data);
+      })
+      .catch(error => {
+        console.error('Error fetching songs:', error);
+        document.getElementById('song-list').innerHTML = '<p>You have no songs.</p>';
+      });
+  }
 
-    function renderSongList(fetchedSongs) {
-        songs = fetchedSongs; // Update the global `songs` array
-        const songListDiv = document.getElementById('song-list');
-        songListDiv.innerHTML = '';
+  function renderSongList(fetchedSongs) {
+    songs = fetchedSongs; // Update the global `songs` array
+    const songListDiv = document.getElementById('song-list');
+    songListDiv.innerHTML = '';
 
-        if (songs.length === 0) {
-            songListDiv.innerHTML = '<p>No songs added.</p>';
-        } else {
-            songs.forEach((song, index) => {
-                const songRow = document.createElement('div');
-                songRow.className = 'song-row';
+    if (songs.length === 0) {
+      songListDiv.innerHTML = '<p>No songs added.</p>';
+    } else {
+      songs.forEach((song, index) => {
+        const songRow = document.createElement('div');
+        songRow.className = 'song-row';
 
-                if (currentEditIndex === index) {
-                    songRow.innerHTML = `
+        if (currentEditIndex === index) {
+          songRow.innerHTML = `
                         <form class="update-form">
                             <label>Song Name:</label>
                             <input type="text" name="name" value="${song.name}" required>
@@ -89,114 +174,119 @@
                             <label>Genre:</label>
                             <input type="text" name="genre" value="${song.genre || ''}">
                             <label>Duration:</label>
-                            <input type="number" name="duration" value="${song.duration}" readonly required>
+                            <input type="number" name="duration" value="${song.duration}" readonly class="duration-label" required>
                             <button type="button" onclick="updateSong(${index})">Save</button>
                             <button type="button" onclick="cancelUpdate()">Cancel</button>
                         </form>
                     `;
-                } else {
-                    songRow.innerHTML = `
+        } else {
+          songRow.innerHTML = `
                         <div class="song-details">
                             <span>${song.name}</span>
                             <span>${song.artist}</span>
+                            <span>${song.album}</span>
+                            <span>${song.genre}</span>
+                            <span>${song.duration}</span>
+
+
                         </div>
                         <div class="song-actions">
                             <button onclick="showUpdateForm(${index})">Update</button>
                             <button onclick="removeSong(${song.id})">Remove</button>
                         </div>
                     `;
-                }
-
-                songListDiv.appendChild(songRow);
-            });
         }
-    }
 
-    // Handle removing a song
-    function removeSong(songId) {
-        if (confirm('Are you sure you want to remove this song?')) {
-            fetch(`/songs/remove/${songId}`, { method: 'GET' })
-                .then(response => response.json())
-                .then(data => {
-                    console.log(`Removed song: ${data.name}`);
-                    fetchSongs(); // Refresh the song list
-                })
-                .catch(error => {
-                    console.error('Error removing song:', error);
-                    alert('Failed to remove the song.');
-                });
-        }
+        songListDiv.appendChild(songRow);
+      });
     }
+  }
 
-    // Show update form
-    function showUpdateForm(index) {
-        if (currentEditIndex !== null) {
-            cancelUpdate(); // Close the current edit form
-        }
-        currentEditIndex = index;
-        renderSongList(songs);
+  // Handle removing a song
+  function removeSong(songId) {
+    if (confirm('Are you sure you want to remove this song?')) {
+      fetch(`/songs/remove/${songId}`, { method: 'GET' })
+        .then(response => response.json())
+        .then(data => {
+          console.log(`Removed song: ${data.name}`);
+          fetchSongs(); // Refresh the song list
+        })
+        .catch(error => {
+          console.error('Error removing song:', error);
+          alert('Failed to remove the song.');
+        });
     }
+  }
 
-    function cancelUpdate() {
+  // Show update form
+  function showUpdateForm(index) {
+    if (currentEditIndex !== null) {
+      cancelUpdate(); // Close the current edit form
+    }
+    currentEditIndex = index;
+    renderSongList(songs);
+  }
+
+  function cancelUpdate() {
+    currentEditIndex = null;
+    renderSongList(songs);
+  }
+
+  async function updateSong(index) {
+    const song = songs[index];
+    const songRow = document.querySelectorAll('.song-row')[index];
+    const form = songRow.querySelector('.update-form');
+    const formData = new FormData(form);
+
+    // Prepare the data for PATCH request
+    const updatedDetails = {
+      name: formData.get('name'),
+      artist: formData.get('artist'),
+      album: formData.get('album'),
+      genre: formData.get('genre'),
+      duration: formData.get('duration'),
+    };
+
+    try {
+      const response = await fetch(`/songs/update/${song.id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updatedDetails),
+      });
+
+      if (response.ok) {
+        const updatedSong = await response.json();
+        alert(`Song "${updatedSong.name}" updated successfully!`);
+
+        // Update the local song data and re-render the list
+        songs[index] = updatedSong;
         currentEditIndex = null;
         renderSongList(songs);
+      } else {
+        const errorData = await response.json();
+        alert(`Error updating song: ${errorData.error || 'Please try again.'}`);
+      }
+    } catch (error) {
+      console.error('Error updating song:', error);
+      alert('An unexpected error occurred. Please try again.');
     }
+  }
 
-    async function updateSong(index) {
-        const song = songs[index];
-        const songRow = document.querySelectorAll('.song-row')[index];
-        const form = songRow.querySelector('.update-form');
-        const formData = new FormData(form);
-
-        // Prepare the data for PATCH request
-        const updatedDetails = {
-            name: formData.get('name'),
-            artist: formData.get('artist'),
-            album: formData.get('album'),
-            genre: formData.get('genre'),
-            duration: formData.get('duration'),
-        };
-
-        try {
-            const response = await fetch(`/songs/update/${song.id}`, {
-                method: 'PATCH',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(updatedDetails),
-            });
-
-            if (response.ok) {
-                const updatedSong = await response.json();
-                alert(`Song "${updatedSong.name}" updated successfully!`);
-
-                // Update the local song data and re-render the list
-                songs[index] = updatedSong;
-                currentEditIndex = null;
-                renderSongList(songs);
-            } else {
-                const errorData = await response.json();
-                alert(`Error updating song: ${errorData.error || 'Please try again.'}`);
-            }
-        } catch (error) {
-            console.error('Error updating song:', error);
-            alert('An unexpected error occurred. Please try again.');
-        }
-    }
-
-    // Initialize
-    fetchSongs();
+  // Initialize
+  fetchSongs();
 </script>
 
 <script>
-document.getElementById('extract-metadata').addEventListener('click', function () {
+  document.getElementById('extract-metadata').addEventListener('click', function () {
     const fileInput = document.getElementById('file');
     const hiddenFileInput = document.getElementById('file-hidden');
     const metadataForm = document.getElementById('metadata-form');
 
     if (fileInput.files.length === 0) {
-        alert('Please select a file.');
-        return;
+      alert('Please select a file.');
+      return;
     }
 
     const file = fileInput.files[0];
@@ -204,34 +294,34 @@ document.getElementById('extract-metadata').addEventListener('click', function (
 
     // Extract metadata
     jsmediatags.read(file, {
-        onSuccess: function (tag) {
-            const { tags } = tag;
-            document.getElementById('name').value = tags.title || '';
-            document.getElementById('artist').value = tags.artist || '';
-            document.getElementById('album').value = tags.album || '';
-            document.getElementById('genre').value = tags.genre || 'Unknown';
+      onSuccess: function (tag) {
+        const { tags } = tag;
+        document.getElementById('name').value = tags.title || '';
+        document.getElementById('artist').value = tags.artist || '';
+        document.getElementById('album').value = tags.album || '';
+        document.getElementById('genre').value = tags.genre || 'Unknown';
 
-            // Calculate duration using an audio element
-            const audio = document.createElement('audio');
-            audio.src = URL.createObjectURL(file);
+        // Calculate duration using an audio element
+        const audio = document.createElement('audio');
+        audio.src = URL.createObjectURL(file);
 
-            audio.addEventListener('loadedmetadata', function () {
-                document.getElementById('duration').value = Math.round(audio.duration);
-                metadataForm.style.display = 'block';
-            });
-        },
-        onError: function (error) {
-            console.error('Error reading metadata:', error);
-            alert('Could not extract metadata. Please fill the form manually.');
-            metadataForm.style.display = 'block';
-        },
+        audio.addEventListener('loadedmetadata', function () {
+          document.getElementById('duration').value = Math.round(audio.duration);
+          metadataForm.style.display = 'block';
+        });
+      },
+      onError: function (error) {
+        console.error('Error reading metadata:', error);
+        alert('Could not extract metadata. Please fill the form manually.');
+        metadataForm.style.display = 'block';
+      },
     });
-});
+  });
 </script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jsmediatags/3.9.5/jsmediatags.min.js"></script>
 <script>
-document.getElementById('save-song-form').addEventListener('submit', async function (e) {
+  document.getElementById('save-song-form').addEventListener('submit', async function (e) {
     e.preventDefault();
 
     const formData = new FormData(this);
@@ -251,47 +341,47 @@ document.getElementById('save-song-form').addEventListener('submit', async funct
     progressBar.style.width = '0%';
 
     try {
-        const response = await fetch(this.action, {
-            method: 'POST',
-            body: formData
-        });
+      const response = await fetch(this.action, {
+        method: 'POST',
+        body: formData
+      });
 
-        if (response.ok) {
-            progressBar.style.width = '100%';
-            successMessage.textContent = `${songName} uploaded successfully!`;
-            successMessage.style.display = 'block';
+      if (response.ok) {
+        progressBar.style.width = '100%';
+        successMessage.textContent = `${songName} uploaded successfully!`;
+        successMessage.style.display = 'block';
 
-            document.getElementById('name').value = '';
-            document.getElementById('artist').value = '';
-            document.getElementById('album').value = '';
-            document.getElementById('genre').value = '';
-            document.getElementById('duration').value = '';
+        document.getElementById('name').value = '';
+        document.getElementById('artist').value = '';
+        document.getElementById('album').value = '';
+        document.getElementById('genre').value = '';
+        document.getElementById('duration').value = '';
 
-            document.getElementById('metadata-form').style.display = 'none';
+        document.getElementById('metadata-form').style.display = 'none';
 
-            fetchSongs();
-        } else {
-            const errorData = await response.json();
-            const errorMessage = errorData.errors || 'Upload failed. Please try again.';
-            const successMessage = document.getElementById('success-message');
-            successMessage.style.display = 'none';
-            errorMessageDiv.textContent = errorMessage;
-            errorMessageDiv.style.display = 'block';
-        }
-    } catch (error) {
-        errorMessageDiv.textContent = 'An unexpected error occurred: ' + error.message;
+        fetchSongs();
+      } else {
+        const errorData = await response.json();
+        const errorMessage = errorData.errors || 'Upload failed. Please try again.';
+        const successMessage = document.getElementById('success-message');
+        successMessage.style.display = 'none';
+        errorMessageDiv.textContent = errorMessage;
         errorMessageDiv.style.display = 'block';
+      }
+    } catch (error) {
+      errorMessageDiv.textContent = 'An unexpected error occurred: ' + error.message;
+      errorMessageDiv.style.display = 'block';
     } finally {
-        statusDiv.style.display = 'none';
+      statusDiv.style.display = 'none';
     }
-});
+  });
 
-// Reset error/success messages on file input change
-const fileInput = document.getElementById('file');
-fileInput.addEventListener('change', function () {
+  // Reset error/success messages on file input change
+  const fileInput = document.getElementById('file');
+  fileInput.addEventListener('change', function () {
     document.getElementById('success-message').style.display = 'none';
     document.getElementById('error-message').style.display = 'none';
-});
+  });
 </script>
 
 {% endblock %}

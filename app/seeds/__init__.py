@@ -4,6 +4,9 @@ from .songs import seed_songs, undo_songs
 from .history import seed_history, undo_history
 from .playlists import seed_playlists, undo_playlists
 
+# http://localhost:5000/files/
+# https://tunes-and-more-music.s3.us-east-1.amazonaws.com/
+
 from app.models.db import db, environment, SCHEMA
 
 # Creates a seed group to hold our commands

@@ -11,75 +11,151 @@
     </a>
   </div>
 
-  <ul style="list-style-type: none; padding: 0;">
-    {% for playlist in playlists %}
-    <li id="playlist-{{ playlist.id }}" style="margin-bottom: 20px; text-align: left;">
+ <ul style="list-style-type: none; padding: 0;">
+  {% for playlist in playlists %}
+  <li id="playlist-{{ playlist.id }}" class="playlist-item">
+    <div class="playlist-container">
       <h2>
-        <a href="{{ url_for('playlists.get_playlist', playlist_id=playlist.id) }}" style="text-decoration: none; color: #007bff;">
+        <a href="{{ url_for('playlists.get_playlist', playlist_id=playlist.id) }}" class="playlist-link">
           {{ playlist.name }}
         </a>
       </h2>
-      <p>{{ playlist.description }}</p>
-      <p>Created At: {{ playlist.created_at }}</p>
-      <ul style="list-style-type: disc; margin-left: 20px;">
-        <li>Songs:</li>
+      <p class="playlist-description">{{ playlist.description }}</p>
+      <p class="playlist-meta">Created At: {{ playlist.created_at }}</p>
+      <ul class="playlist-songs">
+        <li class="song-list-title">Songs:</li>
         {% for song in playlist.songs %}
-        <li>{{ song.name }} by {{ song.artist }}</li>
+        <li class="song-item">{{ song.name }} by {{ song.artist }}</li>
         {% endfor %}
       </ul>
 
       <!-- Edit and Remove buttons -->
-      <a href="{{ url_for('playlists.edit_playlist_form', playlist_id=playlist.id) }}" class="btn btn-secondary" style="text-decoration: none;">
-        Edit Playlist
-      </a>
-      <button class="btn btn-danger" onclick="deletePlaylist({{ playlist.id }})">Remove Playlist</button>
-    </li>
-    {% endfor %}
-  </ul>
+      <div class="playlist-actions">
+        <a href="{{ url_for('playlists.edit_playlist_form', playlist_id=playlist.id) }}" class="btn btn-secondary" style="text-decoration: none;">
+          Edit Playlist
+        </a>
+        <button class="btn btn-danger" onclick="deletePlaylist({{ playlist.id }})">Remove Playlist</button>
+      </div>
+    </div>
+  </li>
+  {% endfor %}
+</ul>
 
-  <style>
-    .btn {
-        display: inline-block;
-        padding: 0.5rem 1rem;
-        font-size: 1rem;
-        color: #fff;
-        background-color: #007bff;
-        border: none;
-        border-radius: 4px;
-        text-align: center;
-        cursor: pointer;
-        transition: background-color 0.3s ease;
-    }
+ <style>
+/* General Styling */
+ul {
+  margin: 0;
+  padding: 0;
+}
 
-    .btn:hover {
-        background-color: #0056b3;
-    }
+li {
+  list-style: none;
+  margin: 0;
+}
 
-    .btn-secondary {
-        background-color: #6c757d;
-    }
+/* Playlist Item Styling */
+.playlist-item {
+  margin-bottom: 20px;
+}
 
-    .btn-secondary:hover {
-        background-color: #5a6268;
-    }
+.playlist-container {
+  width: 800px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 20px;
+  background-color: #fff;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s, box-shadow 0.3s;
+  align-self: center;
+  justify-self: center;
+}
 
-    .btn-danger {
-        background-color: #dc3545;
-    }
+.playlist-container:hover {
+  transform: scale(1.02);
+  box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
+}
 
-    .btn-danger:hover {
-        background-color: #c82333;
-    }
+/* Playlist Title and Description */
+.playlist-link {
+  text-decoration: none;
+  color: #007bff;
+}
 
-    ul {
-        margin: 0;
-        padding: 0;
-    }
+.playlist-link:hover {
+  text-decoration: underline;
+  color: #0056b3;
+}
 
-    li {
-        margin-bottom: 10px;
-    }
-  </style>
+.playlist-description {
+  margin: 10px 0;
+  font-size: 1rem;
+  color: #555;
+}
+
+.playlist-meta {
+  font-size: 0.9rem;
+  color: #888;
+  margin-bottom: 10px;
+}
+
+/* Songs List */
+.playlist-songs {
+  list-style: disc;
+  padding-left: 20px;
+  margin: 10px 0;
+}
+
+.song-list-title {
+  font-weight: bold;
+}
+
+.song-item {
+  font-size: 0.9rem;
+  color: #333;
+}
+
+/* Playlist Actions */
+.playlist-actions {
+  margin-top: 15px;
+}
+
+.btn {
+  display: inline-block;
+  padding: 8px 12px;
+  font-size: 1rem;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.btn:hover {
+  transform: scale(1.05);
+}
+
+.btn-secondary {
+  background-color: #6c757d;
+}
+
+.btn-secondary:hover {
+  background-color: #5a6268;
+}
+
+.btn-danger {
+  background-color: #dc3545;
+  padding: 11px;
+}
+
+.btn-danger:hover {
+  background-color: #c82333;
+}
+
+.btn-primary {
+  background-color: blue;
+  width: 600px;
+}
+</style>
 
 <script>
   function deletePlaylist(playlistId) {
