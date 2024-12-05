@@ -78,6 +78,7 @@ def upgrade():
     )
     if environment == "production":
         op.execute(f"ALTER TABLE playlists SET SCHEMA {SCHEMA};")
+
     op.create_table('playlist_songs',
     sa.Column('playlist_id', sa.Integer(), nullable=False),
     sa.Column('song_id', sa.Integer(), nullable=False),
@@ -86,7 +87,7 @@ def upgrade():
     sa.PrimaryKeyConstraint('playlist_id', 'song_id')
     )
     if environment == "production":
-        op.execute(f"ALTER TABLE production SET SCHEMA {SCHEMA};")
+        op.execute(f"ALTER TABLE playlist_songs SET SCHEMA {SCHEMA};")
     # ### end Alembic commands ###
 
 
