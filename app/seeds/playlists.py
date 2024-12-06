@@ -3,7 +3,6 @@ from app.models import Playlist, Song, User
 from sqlalchemy.sql import text
 
 def seed_playlists():
-    # Create playlists
     playlist1 = Playlist(
         user_id=1,
         name='Chill Vibes',
@@ -25,7 +24,6 @@ def seed_playlists():
         name='The Orange King',
     )
 
-    # Add songs to playlists
     song1 = Song.query.filter_by(name='Breezy').first()
     song2 = Song.query.filter_by(name='Compression of Time').first()
     song3 = Song.query.filter_by(name='Ending Theme').first()
