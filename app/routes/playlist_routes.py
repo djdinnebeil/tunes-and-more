@@ -58,13 +58,12 @@ def create_playlist_form():
 def create_playlist():
     data = request.form
     name = data.get('name')
-    description = data.get('description', '')
     song_ids = request.form.getlist('songs')  # List of selected song IDs
 
     if not name:
         return jsonify({"error": "Playlist name is required"}), 400
 
-    new_playlist = Playlist(user_id=current_user.id, name=name, description=description)
+    new_playlist = Playlist(user_id=current_user.id, name=name)
     db.session.add(new_playlist)
     db.session.commit()
 
@@ -106,14 +105,12 @@ def update_playlist(playlist_id):
 
     data = request.form
     name = data.get('name')
-    description = data.get('description', '')
     song_ids = request.form.getlist('songs')  # List of selected song IDs
 
     if not name:
         return jsonify({"error": "Playlist name is required"}), 400
 
     playlist.name = name
-    playlist.description = description
     playlist.songs = []  # Clear existing songs
 
     # Add selected songs

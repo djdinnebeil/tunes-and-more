@@ -44,62 +44,50 @@
 <br/><br/>
 <h2>Your Songs</h2>
 <div id="song-list">
-  <p>Loading your songs...</p>
+  <div class="headers-row">
+    <span class="column-header">Song Name</span>
+    <span class="column-header">Artist</span>
+    <span class="column-header">Album</span>
+    <span class="column-header">Genre</span>
+    <span class="column-header">Duration</span>
+    <span class="column-header">Actions</span>
+  </div>
 </div>
+
 <style>
-/* Song Row Styling */
-.song-row {
-  display: flex;
-  justify-content: space-between;
+/* Consistent layout for headers and rows */
+.headers-row, .song-row {
+  display: grid;
+  grid-template-columns: 3fr 2fr 2fr 2fr 1fr 2fr;
+  gap: 10px;
   align-items: center;
+}
+
+.headers-row {
+  background-color: #f1f1f1;
+  padding: 15px;
+  border-bottom: 2px solid #ddd;
+  font-weight: bold;
+}
+
+.song-row {
   background-color: #f9f9f9;
   padding: 15px;
   border: 1px solid #ddd;
   border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  transition: transform 0.2s, box-shadow 0.2s;
+  margin-bottom: 10px;
 }
 
-.song-row:hover {
-  transform: scale(1.02);
-  box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
-}
-
-/* Song Details Styling */
-.song-details {
-  display: grid;
-  grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
-  gap: 10px;
-  align-items: center;
-  flex-grow: 1;
-  text-align: left;
-}
-
-.song-name {
-  font-size: 1em;
-  font-weight: bold;
-  color: #333;
-}
-
-.song-artist, .song-album, .song-genre, .song-duration {
-  font-size: 0.9em;
-  color: #555;
-}
-
-/* Button Container */
 .song-actions {
   display: flex;
+  justify-content: center;
   gap: 10px;
 }
 
-/* Button Styling */
 .action-button {
   padding: 8px 12px;
   font-size: 0.9em;
-  border: none;
   border-radius: 6px;
-  cursor: pointer;
-  transition: background-color 0.2s, color 0.2s;
 }
 
 .update-btn {
@@ -107,177 +95,140 @@
   color: white;
 }
 
-.update-btn:hover {
-  background-color: #45a049;
-}
-
 .remove-btn {
   background-color: #f44336;
   color: white;
 }
 
-.remove-btn:hover {
-  background-color: #e53935;
-}
 
-.update-form label {
-  margin-left: 35px;
-}
-
-.duration-label {
-  background-color: lightgray;
-  margin-right: 25px;
-}
 
 </style>
 
-
 <script>
-  let songs = [];
-  let currentEditIndex = null; // Track the currently edited song
+// Global variable for songs
+let songs = [];
 
-  // Fetch and render the user's songs
-  function fetchSongs() {
-    fetch('/songs/upload/history')
-      .then(response => response.json())
-      .then(data => {
-        songs = data; // Populate the global `songs` array
-        renderSongList(data);
-      })
-      .catch(error => {
-        console.error('Error fetching songs:', error);
-        document.getElementById('song-list').innerHTML = '<p>You have no songs.</p>';
-      });
-  }
+// Fetch and display songs
+function fetchSongs() {
+  fetch('/songs/upload/history')
+    .then(response => response.json())
+    .then(data => {
+      songs = data; // Store songs globally
+      renderSongs();
+    })
+    .catch(error => console.error('Error fetching songs:', error));
+}
 
-  function renderSongList(fetchedSongs) {
-    songs = fetchedSongs; // Update the global `songs` array
-    const songListDiv = document.getElementById('song-list');
-    songListDiv.innerHTML = '';
+// Render the song list
+function renderSongs() {
+  const songListDiv = document.getElementById('song-list');
+  songListDiv.innerHTML = `
+    <div class="headers-row">
+      <span class="column-header">Song Name</span>
+      <span class="column-header">Artist</span>
+      <span class="column-header">Album</span>
+      <span class="column-header">Genre</span>
+      <span class="column-header">Duration</span>
+      <span class="column-header">Actions</span>
+    </div>
+  `;
 
-    if (songs.length === 0) {
-      songListDiv.innerHTML = '<p>No songs added.</p>';
-    } else {
-      songs.forEach((song, index) => {
-        const songRow = document.createElement('div');
-        songRow.className = 'song-row';
+  songs.forEach((song, index) => {
+    const songRow = document.createElement('div');
+    songRow.className = 'song-row';
 
-        if (currentEditIndex === index) {
-          songRow.innerHTML = `
-                        <form class="update-form">
-                            <label>Song Name:</label>
-                            <input type="text" name="name" value="${song.name}" required>
-                            <label>Artist:</label>
-                            <input type="text" name="artist" value="${song.artist}" required>
-                            <label>Album:</label>
-                            <input type="text" name="album" value="${song.album || ''}">
-                            <label>Genre:</label>
-                            <input type="text" name="genre" value="${song.genre || ''}">
-                            <label>Duration:</label>
-                            <input type="number" name="duration" value="${song.duration}" readonly class="duration-label" required>
-                            <button type="button" onclick="updateSong(${index})">Save</button>
-                            <button type="button" onclick="cancelUpdate()">Cancel</button>
-                        </form>
-                    `;
+    songRow.innerHTML = `
+      <span>${song.name}</span>
+      <span>${song.artist}</span>
+      <span>${song.album || 'N/A'}</span>
+      <span>${song.genre || 'N/A'}</span>
+      <span>${song.duration}</span>
+      <div class="song-actions">
+        <button class="action-button update-btn" onclick="showUpdateForm(${index})">Update</button>
+        <button class="action-button remove-btn" onclick="removeSong(${song.id})">Remove</button>
+      </div>
+    `;
+
+    songListDiv.appendChild(songRow);
+  });
+}
+
+// Remove a song
+function removeSong(songId) {
+  if (confirm('Are you sure you want to remove this song?')) {
+    fetch(`/songs/remove/${songId}`, { method: 'GET' })
+      .then(response => {
+        if (response.ok) {
+          fetchSongs(); // Refresh the list
         } else {
-          songRow.innerHTML = `
-                        <div class="song-details">
-                            <span>${song.name}</span>
-                            <span>${song.artist}</span>
-                            <span>${song.album}</span>
-                            <span>${song.genre}</span>
-                            <span>${song.duration}</span>
-
-
-                        </div>
-                        <div class="song-actions">
-                            <button onclick="showUpdateForm(${index})">Update</button>
-                            <button onclick="removeSong(${song.id})">Remove</button>
-                        </div>
-                    `;
-        }
-
-        songListDiv.appendChild(songRow);
-      });
-    }
-  }
-
-  // Handle removing a song
-  function removeSong(songId) {
-    if (confirm('Are you sure you want to remove this song?')) {
-      fetch(`/songs/remove/${songId}`, { method: 'GET' })
-        .then(response => response.json())
-        .then(data => {
-          console.log(`Removed song: ${data.name}`);
-          fetchSongs(); // Refresh the song list
-        })
-        .catch(error => {
-          console.error('Error removing song:', error);
           alert('Failed to remove the song.');
-        });
-    }
+        }
+      })
+      .catch(error => console.error('Error removing song:', error));
   }
+}
 
-  // Show update form
-  function showUpdateForm(index) {
-    if (currentEditIndex !== null) {
-      cancelUpdate(); // Close the current edit form
-    }
-    currentEditIndex = index;
-    renderSongList(songs);
-  }
+// Show the update form for a song
+function showUpdateForm(index) {
+  const song = songs[index];
+  const songListDiv = document.getElementById('song-list');
+  songListDiv.innerHTML = `
+    <div class="headers-row">
+      <span class="column-header">Song Name</span>
+      <span class="column-header">Artist</span>
+      <span class="column-header">Album</span>
+      <span class="column-header">Genre</span>
+      <span class="column-header">Duration</span>
+      <span class="column-header">Actions</span>
+    </div>
+  `;
 
-  function cancelUpdate() {
-    currentEditIndex = null;
-    renderSongList(songs);
-  }
+  const songRow = document.createElement('div');
+  songRow.className = 'song-row';
+  songRow.innerHTML = `
+    <input type="text" value="${song.name}" id="update-name-${index}" />
+    <input type="text" value="${song.artist}" id="update-artist-${index}" />
+    <input type="text" value="${song.album || ''}" id="update-album-${index}" />
+    <input type="text" value="${song.genre || ''}" id="update-genre-${index}" />
+    <input type="number" value="${song.duration}" readonly />
+    <div class="song-actions">
+      <button class="action-button update-btn" onclick="updateSong(${index})">Save</button>
+      <button class="action-button remove-btn" onclick="fetchSongs()">Cancel</button>
+    </div>
+  `;
 
-  async function updateSong(index) {
-    const song = songs[index];
-    const songRow = document.querySelectorAll('.song-row')[index];
-    const form = songRow.querySelector('.update-form');
-    const formData = new FormData(form);
+  songListDiv.appendChild(songRow);
+}
 
-    // Prepare the data for PATCH request
-    const updatedDetails = {
-      name: formData.get('name'),
-      artist: formData.get('artist'),
-      album: formData.get('album'),
-      genre: formData.get('genre'),
-      duration: formData.get('duration'),
-    };
+// Update a song
+function updateSong(index) {
+  const song = songs[index];
+  const updatedSong = {
+    name: document.getElementById(`update-name-${index}`).value,
+    artist: document.getElementById(`update-artist-${index}`).value,
+    album: document.getElementById(`update-album-${index}`).value,
+    genre: document.getElementById(`update-genre-${index}`).value,
+    duration: song.duration, // Duration is readonly
+  };
 
-    try {
-      const response = await fetch(`/songs/update/${song.id}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(updatedDetails),
-      });
-
+  fetch(`/songs/update/${song.id}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(updatedSong),
+  })
+    .then(response => {
       if (response.ok) {
-        const updatedSong = await response.json();
-        alert(`Song "${updatedSong.name}" updated successfully!`);
-
-        // Update the local song data and re-render the list
-        songs[index] = updatedSong;
-        currentEditIndex = null;
-        renderSongList(songs);
+        fetchSongs(); // Refresh the list
       } else {
-        const errorData = await response.json();
-        alert(`Error updating song: ${errorData.error || 'Please try again.'}`);
+        alert('Failed to update the song.');
       }
-    } catch (error) {
-      console.error('Error updating song:', error);
-      alert('An unexpected error occurred. Please try again.');
-    }
-  }
+    })
+    .catch(error => console.error('Error updating song:', error));
+}
 
-  // Initialize
-  fetchSongs();
+// Initialize the page
+fetchSongs();
 </script>
-
 <script>
   document.getElementById('extract-metadata').addEventListener('click', function () {
     const fileInput = document.getElementById('file');
@@ -383,5 +334,53 @@
     document.getElementById('error-message').style.display = 'none';
   });
 </script>
+<style>
+  .action-button {
+  padding: 8px 16px;
+  font-size: 0.9em;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s, color 0.2s, transform 0.1s;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
 
+/* Update Button */
+.update-btn {
+  background-color: #42af50;
+  color: white;
+}
+
+.update-btn:hover {
+  background-color: #45a049;
+  transform: translateY(-2px);
+}
+
+/* Remove Button */
+.remove-btn {
+  background-color: #f44336;
+  color: white;
+}
+
+.remove-btn:hover {
+  background-color: #e53935;
+  transform: translateY(-2px);
+}
+
+/* Disabled Button */
+.action-button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+/* Add hover and active effects for interactivity */
+.action-button:hover {
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+}
+
+.action-button:active {
+  transform: scale(0.98);
+}
+
+</style>
 {% endblock %}

@@ -20,8 +20,7 @@
           {{ playlist.name }}
         </a>
       </h2>
-      <p class="playlist-description">{{ playlist.description }}</p>
-      <p class="playlist-meta">Created At: {{ playlist.created_at }}</p>
+      <p class="playlist-meta">Created: {{ playlist.created_at }}</p>
       <ul class="playlist-songs">
         <li class="song-list-title">Songs:</li>
         {% for song in playlist.songs %}
@@ -75,7 +74,7 @@ li {
   box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
 }
 
-/* Playlist Title and Description */
+/* Playlist Title */
 .playlist-link {
   text-decoration: none;
   color: #007bff;
@@ -84,12 +83,6 @@ li {
 .playlist-link:hover {
   text-decoration: underline;
   color: #0056b3;
-}
-
-.playlist-description {
-  margin: 10px 0;
-  font-size: 1rem;
-  color: #555;
 }
 
 .playlist-meta {

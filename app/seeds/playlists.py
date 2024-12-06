@@ -7,27 +7,22 @@ def seed_playlists():
     playlist1 = Playlist(
         user_id=1,
         name='Chill Vibes',
-        description='Relaxing RPG tracks for focus and relaxation.'
     )
     playlist2 = Playlist(
         user_id=2,
-        name='Epic Journeys',
-        description='Music for epic adventures and explorations.'
+        name='Epic Journeys'
     )
     playlist3 = Playlist(
         user_id=3,
         name='Boss Battle Themes',
-        description='Intense tracks to pump up your adrenaline.'
     )
     playlist4 = Playlist(
         user_id=1,
-        name='Boss Battle Themes',
-        description='Intense tracks to pump up your adrenaline.'
+        name='Bowser Battle Themes',
     )
     playlist5 = Playlist(
         user_id=1,
-        name='More Boss Battle Themes',
-        description='Intense tracks to pump up your adrenaline.'
+        name='The Orange King',
     )
 
     # Add songs to playlists
@@ -36,12 +31,14 @@ def seed_playlists():
     song3 = Song.query.filter_by(name='Ending Theme').first()
     song4 = Song.query.filter_by(name='Eyes on Me').first()
     song5 = Song.query.filter_by(name='Junction').first()
+    song6 = Song.query.filter_by(name='Mission Complete').first()
+    song7 = Song.query.filter_by(name='Windmill Hut').first()
 
     playlist1.songs.extend([song1, song2, song3, song4, song5])
-    playlist2.songs.extend([song1, song2, song3, song4, song5])
-    playlist3.songs.extend([song1, song2, song3, song4, song5])
-    playlist4.songs.extend([song1, song2, song3, song4, song5])
-    playlist5.songs.extend([song1, song2, song3, song4, song5])
+    playlist2.songs.extend([song6, song2, song3, song4])
+    playlist3.songs.extend([song7, song2, song3, song4, song5])
+    playlist4.songs.extend([song6, song3, song4, song5])
+    playlist5.songs.extend([song7, song4, song5])
 
 
 
@@ -50,8 +47,6 @@ def seed_playlists():
     db.session.add(playlist2)
     db.session.add(playlist3)
     db.session.add(playlist4)
-    db.session.add(playlist5)
-
 
     db.session.commit()
 

@@ -20,7 +20,11 @@ def allowed_file(filename):
 @login_required
 def upload_song_page():
     # Default form render (empty fields)
-    return render_template('upload_song.html', metadata={})
+    songs = Song.query.filter_by(user_id=current_user.id).order_by(Song.created_at).all()
+    if not songs:
+        return []
+    songs = [entry.to_dict() for entry in songs]
+    return render_template('upload_song.html', songs=songs)
 
 
 @song_routes.route('/upload/save', methods=['POST'])

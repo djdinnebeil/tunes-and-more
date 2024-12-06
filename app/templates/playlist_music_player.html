@@ -3,9 +3,18 @@
 {% block title %}{{ playlist.name }} - Tunes and More{% endblock %}
 
 {% block content %}
+<div class="dropdown">
+    <button class="dropdown-button">Select Playlist</button>
+    <div class="dropdown-content">
+        <a href="{{ url_for('songs.music_player') }}" class="music-player-home">Music Player Home</a>
+        {% for playlist in playlists %}
+        <a href="{{ url_for('playlists.get_playlist', playlist_id=playlist.id) }}">{{ playlist.name }}</a>
+        {% endfor %}
+    </div>
+</div>
+<hr/>
+<br/>
 <h1>{{ playlist.name }}</h1>
-<p>{{ playlist.description }}</p>
-
 <div class="player">
     <h2>Now Playing</h2>
     <p id="song-info">Select a song to play</p>
@@ -18,15 +27,6 @@
         <button onclick="nextSong()">Next</button>
     </div>
 </div>
-<div class="dropdown">
-    <button class="dropdown-button">Select Playlist</button>
-    <div class="dropdown-content">
-        <a href="{{ url_for('songs.music_player') }}">Play All Songs</a>
-        {% for playlist in playlists %}
-        <a href="{{ url_for('playlists.get_playlist', playlist_id=playlist.id) }}">{{ playlist.name }}</a>
-        {% endfor %}
-    </div>
-</div>
 <div class="song-list">
     <h2>Playlist Songs</h2>
     <div class="songs-grid" id="songs-grid">
@@ -34,50 +34,7 @@
     </div>
 </div>
 <style>
-    .dropdown {
-        position: relative;
-        display: inline-block;
-    }
 
-    .dropdown-button {
-        background-color: #007bff;
-        color: white;
-        padding: 10px 20px;
-        border: none;
-        cursor: pointer;
-        width: 600px;
-        height: 50px;
-        border-radius: 52px;
-        font-size: 1.2rem;
-    }
-
-    .dropdown-content {
-        display: none;
-        position: absolute;
-        background-color: #f9f9f9;
-        width: 600px;
-        box-shadow: 0px 8px 16px rgba(0,0,0,0.2);
-        z-index: 1;
-    }
-
-    .dropdown-content a {
-        color: black;
-        padding: 12px 16px;
-        text-decoration: none;
-        display: block;
-    }
-
-    .dropdown-content a:hover {
-        background-color: #ddd;
-    }
-
-    .dropdown:hover .dropdown-content {
-        display: block;
-    }
-
-    .dropdown:hover .dropdown-button {
-        background-color: #0056b3;
-    }
 </style>
 
 <script>
@@ -121,7 +78,7 @@
         audioSource.src = song.file_url;
         audioPlayer.load();
         audioPlayer.play();
-        songInfo.textContent = `Now Playing: ${song.name} by ${song.artist}`;
+        songInfo.textContent = `${song.name} by ${song.artist}`;
 
         fetch(`/songs/play/${song.id}`, { method: 'POST' })
             .then(response => response.json())

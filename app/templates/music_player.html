@@ -3,8 +3,17 @@
 {% block title %}Music Player - Tunes and More{% endblock %}
 
 {% block content %}
-<h1>Your Music Player</h1>
-
+<div class="dropdown">
+    <button class="dropdown-button">Select Playlist</button>
+    <div class="dropdown-content">
+        {% for playlist in playlists %}
+        <a href="{{ url_for('playlists.get_playlist', playlist_id=playlist.id) }}">{{ playlist.name }}</a>
+        {% endfor %}
+    </div>
+</div>
+<hr/>
+<br/>
+<h1>Music Player Home</h1>
 <div class="player">
     <h2>Now Playing</h2>
     <p id="song-info">Select a song to play</p>
@@ -17,14 +26,6 @@
         <button onclick="nextSong()">Next</button>
     </div>
 </div>
-<div class="dropdown">
-    <button class="dropdown-button">Select Playlist</button>
-    <div class="dropdown-content">
-        {% for playlist in playlists %}
-        <a href="{{ url_for('playlists.get_playlist', playlist_id=playlist.id) }}">{{ playlist.name }}</a>
-        {% endfor %}
-    </div>
-</div>
 
 <div class="song-list">
     <h2>Your Songs</h2>
@@ -35,56 +36,8 @@
 
 </div>
 
-<style>
-    .dropdown {
-        position: relative;
-        display: inline-block;
-    }
-
-    .dropdown-button {
-        background-color: #007bff;
-        color: white;
-        padding: 10px 20px;
-        border: none;
-        border-radius: 42px;
-        cursor: pointer;
-        width: 600px;
-        height: 50px;
-        font-size: 1.2rem;
-    }
-
-    .dropdown-content {
-        display: none;
-        position: absolute;
-        background-color: #f9f9f9;
-        width: 600px;
-        box-shadow: 0px 8px 16px rgba(0,0,0,0.2);
-        z-index: 1;
-    }
-
-    .dropdown-content a {
-        color: black;
-        padding: 12px 16px;
-        text-decoration: none;
-        display: block;
-    }
-
-    .dropdown-content a:hover {
-        background-color: #ddd;
-    }
-
-    .dropdown:hover .dropdown-content {
-        display: block;
-    }
-
-    .dropdown:hover .dropdown-button {
-        background-color: #0056b3;
-    }
-</style>
-
-
 <script>
-  let currentSongIndex = null; // Track the current song index
+let currentSongIndex = null; // Track the current song index
 let songs = []; // Updated dynamically from the server
 
 function loadSong(songIndex) {
@@ -116,7 +69,7 @@ function loadSong(songIndex) {
         console.error('Playback failed:', error);
     });
 
-    songInfo.textContent = `Now Playing: ${song.name} by ${song.artist}`;
+    songInfo.textContent = `${song.name} by ${song.artist}`;
 
     fetch(`/songs/play/${song.id}`, { method: 'POST' })
         .then(response => response.json())
@@ -263,6 +216,5 @@ document.getElementById('audio-player').addEventListener('ended', () => {
 });
 
 </script>
-
 {% endblock %}
 

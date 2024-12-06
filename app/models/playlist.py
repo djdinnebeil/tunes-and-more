@@ -19,7 +19,6 @@ class Playlist(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey(add_prefix_for_prod('users.id')), nullable=False)
     name = db.Column(db.String(100), nullable=False)
-    description = db.Column(db.String(255), nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.now)
     updated_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
 
@@ -32,9 +31,8 @@ class Playlist(db.Model):
             'id': self.id,
             'user_id': self.user_id,
             'name': self.name,
-            'description': self.description,
-            'created_at': self.created_at.isoformat(),
-            'updated_at': self.updated_at.isoformat(),
+            'created_at': self.created_at.strftime('%b %d, %Y %I:%M %p') if self.created_at else None,
+            'updated_at': self.updated_at.strftime('%b %d, %Y %I:%M %p') if self.updated_at else None,
             'songs': [song.to_dict() for song in self.songs]
         }
 

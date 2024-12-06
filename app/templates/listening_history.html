@@ -124,4 +124,39 @@
   }
 
 </script>
+<style>
+  /* Apply background colors to alternate rows */
+  .history-table tbody tr:nth-child(odd) {
+    background-color: #f9f9f9; /* Light gray for odd rows */
+  }
+
+  .history-table tbody tr:nth-child(even) {
+    background-color: #ffffff; /* White for even rows */
+  }
+
+  /* Optional: Add hover effect to highlight the row */
+  .history-table tbody tr:hover {
+    background-color: #f1f1f1; /* Slightly darker gray on hover */
+    cursor: pointer;
+  }
+
+  /* Other styles for alignment */
+  .text-left-align {
+    text-align: left;
+  }
+
+  .centered-table {
+    margin: 0 auto; /* Center the table */
+    width: 80%; /* Adjust width as needed */
+    border-collapse: collapse;
+  }
+
+  .history-table th,
+  .history-table td {
+    padding: 10px;
+    /*border: 1px solid #ddd; !* Add a border *!*/
+  }
+
+</style>
+
 {% endblock %}
