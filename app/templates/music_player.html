@@ -132,7 +132,7 @@ function stopPlayback() {
 }
 
 function removeSong(songId) {
-    if (!confirm('Are you sure you want to delete this song and its related data?')) {
+    if (!confirm('Are you sure you want to delete this song?')) {
         return;
     }
     let currentSongId = songs[currentSongIndex]?.id

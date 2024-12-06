@@ -155,7 +155,7 @@ function renderSongs() {
 
 // Remove a song
 function removeSong(songId) {
-  if (confirm('Are you sure you want to delete this song and its related data?')) {
+  if (confirm('Are you sure you want to delete this song?')) {
     fetch(`/songs/remove/${songId}`, { method: 'GET' })
       .then(response => {
         if (response.ok) {
