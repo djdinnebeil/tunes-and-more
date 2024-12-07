@@ -4,14 +4,24 @@ from werkzeug.security import generate_password_hash
 from sqlalchemy.sql import text
 
 def seed_users():
-    user1 = User(username='demo@aa.io', email='demo@aa.io', password='password')
-    user2 = User(username='djdinnebeil@aa.io', email='djdinnebeil@aa.io', password='password')
-    user3 = User(username='dd42@aa.io', email='dd42@aa.io', password='password')
-
-    db.session.add(user1)
-    db.session.add(user2)
-    db.session.add(user3)
-
+    users = [
+        User(
+            username='demo@aa.io',
+            email='demo@aa.io',
+            password='password'
+        ),
+        User(
+            username='djdinnebeil@aa.io',
+            email='djdinnebeil@aa.io',
+            password='password'
+        ),
+        User(
+            username='dd42@aa.io',
+            email='dd42@aa.io',
+            password='password'
+        ),
+    ]
+    db.session.bulk_save_objects(users)
     db.session.commit()
 
 

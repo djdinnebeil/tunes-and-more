@@ -3,14 +3,9 @@ from .users import seed_users, undo_users
 from .songs import seed_songs, undo_songs
 from .history import seed_history, undo_history
 from .playlists import seed_playlists, undo_playlists
-
-# http://localhost:5000/files/
-# https://tunes-and-more-music.s3.us-east-1.amazonaws.com/
-
 from app.models.db import db, environment, SCHEMA
 
-# Creates a seed group to hold our commands
-# So we can type `flask seed --help`
+
 seed_commands = AppGroup('seed')
 
 

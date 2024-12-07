@@ -33,7 +33,6 @@
     <h2>Your Songs</h2>
 <div class="songs-grid">
 
-
 </div>
 
 </div>
@@ -174,7 +173,7 @@ function removeSong(songId) {
 }
 
 // Fetch songs for the current user
-fetch('/songs')
+fetch('/songs/current')
     .then(response => response.json())
     .then(data => {
         songs = data; // Store the user's songs globally

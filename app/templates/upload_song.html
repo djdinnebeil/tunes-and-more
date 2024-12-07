@@ -13,7 +13,7 @@
 
 <div id="metadata-form" style="display: none;">
   <h2>Edit Song Details</h2>
-  <form id="save-song-form" action="/songs/upload/save" method="POST" enctype="multipart/form-data">
+  <form id="save-song-form" action="/upload/save" method="POST" enctype="multipart/form-data">
     <input type="file" name="file" id="file-hidden" style="display: none;">
     <label for="name">Song Name:</label>
     <input type="text" name="name" id="name" required>
@@ -53,64 +53,14 @@
     <span class="column-header">Actions</span>
   </div>
 </div>
-
-<style>
-/* Consistent layout for headers and rows */
-.headers-row, .song-row {
-  display: grid;
-  grid-template-columns: 3fr 2fr 2fr 2fr 1fr 2fr;
-  gap: 10px;
-  align-items: center;
-}
-
-.headers-row {
-  background-color: #f1f1f1;
-  padding: 15px;
-  border-bottom: 2px solid #ddd;
-  font-weight: bold;
-}
-
-.song-row {
-  background-color: #f9f9f9;
-  padding: 15px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  margin-bottom: 10px;
-}
-
-.song-actions {
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-}
-
-.action-button {
-  padding: 8px 12px;
-  font-size: 0.9em;
-  border-radius: 6px;
-}
-
-.update-btn {
-  background-color: #4caf50;
-  color: white;
-}
-
-.remove-btn {
-  background-color: #f44336;
-  color: white;
-}
-
-
-
-</style>
+<h2 id="current-song" style="color: midnightblue; font-weight: bold; display: none;">Now Playing: None</h2>
+<audio id="audio-player" controls style="display: none;"></audio>
 
 <script>
-// Global variable for songs
 let songs = [];
 
-// Fetch and display songs
 function fetchSongs() {
-  fetch('/songs/upload/history')
+  fetch('/upload/current')
     .then(response => response.json())
     .then(data => {
       songs = data; // Store songs globally
@@ -146,11 +96,86 @@ function renderSongs() {
       <div class="song-actions">
         <button class="action-button update-btn" onclick="showUpdateForm(${index})">Update</button>
         <button class="action-button remove-btn" onclick="removeSong(${song.id})">Remove</button>
+        <button class="action-button play-btn" id="play-${song.id}" onclick="playSong('${index}')">Play</button>
       </div>
     `;
 
     songListDiv.appendChild(songRow);
   });
+}
+
+let currentSong = null; // Track the currently playing song
+let isPlaying = false; // Track playback state
+
+function playSong(songIndex) {
+  song = songs[songIndex];
+  fileUrl = songs[songIndex].file_url;
+  songId = song.id;
+  songName = song.name;
+
+  const audioPlayer = document.getElementById('audio-player');
+  const songDisplay = document.getElementById('current-song');
+  const playButton = document.getElementById(`play-${songId}`);
+
+  // Reset all play buttons to "Play"
+  document.querySelectorAll('.play-btn').forEach((button) => {
+    button.innerText = "Play";
+  });
+
+  if (currentSong === songId) {
+    if (isPlaying) {
+      audioPlayer.pause();
+      playButton.innerText = "Play";
+      isPlaying = false;
+    } else {
+      audioPlayer.play();
+      playButton.innerText = "Pause";
+      isPlaying = true;
+    }
+  } else {
+    playButton.innerText = "Pause";
+    currentSong = songId;
+    isPlaying = true;
+    audioPlayer.src = fileUrl; // Set the source of the audio element
+    audioPlayer.style.display = 'block'; // Make the player visible
+    audioPlayer.play(); // Play the song
+  }
+
+  // Update the song display
+  songDisplay.textContent = `Now Playing: ${songName}`;
+  songDisplay.style.display = 'block';
+
+  // Handle audio events
+  audioPlayer.onended = () => {
+    playButton.innerText = "Play";
+    isPlaying = false;
+  };
+
+  audioPlayer.onpause = () => {
+    isPlaying = false;
+    playButton.innerText = "Play";
+  };
+
+  audioPlayer.onplay = () => {
+    isPlaying = true;
+    playButton.innerText = "Pause";
+  };
+}
+
+// Stop playback and reset audio player
+function stopPlayback() {
+  const audioPlayer = document.getElementById('audio-player');
+  const songDisplay = document.getElementById('current-song'); // Song name display
+
+  audioPlayer.pause(); // Stop playback
+  audioPlayer.src = ''; // Clear the audio source
+  audioPlayer.style.display = 'none'; // Hide the audio player
+
+  currentSong = null; // Reset current song
+  isPlaying = false; // Reset playback state
+
+  songDisplay.textContent = 'Now Playing: None'; // Reset the display
+  songDisplay.style.display = 'none'; // Hide the Now Playing section
 }
 
 // Remove a song
@@ -160,6 +185,7 @@ function removeSong(songId) {
       .then(response => {
         if (response.ok) {
           fetchSongs(); // Refresh the list
+           stopPlayback();
         } else {
           alert('Failed to remove the song.');
         }
@@ -211,7 +237,7 @@ function updateSong(index) {
     duration: song.duration, // Duration is readonly
   };
 
-  fetch(`/songs/update/${song.id}`, {
+  fetch(`/upload/update/${song.id}`, {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(updatedSong),
@@ -335,6 +361,35 @@ fetchSongs();
   });
 </script>
 <style>
+/* Consistent layout for headers and rows */
+.headers-row, .song-row {
+  display: grid;
+  grid-template-columns: 3fr 2fr 2fr 2fr 1fr 2fr;
+  gap: 10px;
+  align-items: center;
+}
+
+.headers-row {
+  background-color: #f1f1f1;
+  padding: 15px;
+  border-bottom: 2px solid #ddd;
+  font-weight: bold;
+}
+
+.song-row {
+  background-color: #f9f9f9;
+  padding: 15px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  margin-bottom: 10px;
+}
+
+.song-actions {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
   .action-button {
   padding: 8px 16px;
   font-size: 0.9em;

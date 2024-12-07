@@ -12,10 +12,10 @@
     <header>
       <nav>
         {% if current_user.is_authenticated %}
-        <a href="/songs/player">Music Player</a>
-        <a href="/songs/upload">Upload Song</a>
-        <a href="/playlists/view">Playlist Maker</a>
-        <a href="/songs/history">Listening History</a>
+        <a href="/songs">Music Player</a>
+        <a href="/upload">Upload Song</a>
+        <a href="/playlists">Playlist Maker</a>
+        <a href="/history">Listening History</a>
         <a href="/logout">Logout</a>
         {% else %}
         <a href="/">Home</a>

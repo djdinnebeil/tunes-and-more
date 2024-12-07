@@ -35,5 +35,3 @@ class Playlist(db.Model):
             'updated_at': self.updated_at.strftime('%b %d, %Y %I:%M %p') if self.updated_at else None,
             'songs': [song.to_dict() for song in self.songs]
         }
-
-

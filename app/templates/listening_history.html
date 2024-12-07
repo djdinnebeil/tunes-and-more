@@ -55,7 +55,7 @@
       resetButton.textContent = 'Processing...'; // Optional: Show a loading message
     }
 
-    fetch(`/songs/history/reset/${historyId}`, {method: 'POST'})
+    fetch(`/history/reset/${historyId}`, {method: 'POST'})
       .then(response => {
         if (!response.ok) {
           return response.json().then(err => {
@@ -100,7 +100,7 @@
       return;
     }
 
-    fetch(`/songs/history/remove/${historyId}`, {method: 'DELETE'})
+    fetch(`/history/remove/${historyId}`, {method: 'DELETE'})
       .then(response => {
         if (!response.ok) {
           return response.json().then(err => {

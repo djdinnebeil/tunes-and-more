@@ -61,7 +61,6 @@ def login():
 
         # Redirect to a user dashboard or homepage
         return redirect(url_for('auth.dashboard'))
-
     return render_template('login.html')
 
 
@@ -70,7 +69,6 @@ def login():
 def dashboard():
     if not current_user.is_authenticated:
         return redirect(url_for('auth.login'))  # Redirect to login if not authenticated
-
     return render_template('dashboard.html', user=current_user)
 
 

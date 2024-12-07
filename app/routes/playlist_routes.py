@@ -4,6 +4,13 @@ from app.models import Playlist, db, Song
 
 playlist_routes = Blueprint('playlists', __name__)
 
+@playlist_routes.route('/', methods=['GET'])
+@login_required
+def view_user_playlists():
+    user_id = current_user.id
+    playlists = Playlist.query.filter_by(user_id=user_id).all()
+    return render_template('playlists.html', playlists=[playlist.to_dict() for playlist in playlists])
+
 @playlist_routes.route('/current', methods=['GET'])
 @login_required
 def get_user_playlists():
@@ -11,12 +18,6 @@ def get_user_playlists():
     playlists = Playlist.query.filter_by(user_id=user_id).all()
     return jsonify([playlist.to_dict() for playlist in playlists])
 
-@playlist_routes.route('/view', methods=['GET'])
-@login_required
-def view_user_playlists():
-    user_id = current_user.id
-    playlists = Playlist.query.filter_by(user_id=user_id).all()
-    return render_template('playlists.html', playlists=[playlist.to_dict() for playlist in playlists])
 
 @playlist_routes.route('/<int:playlist_id>', methods=['GET'])
 @login_required
@@ -42,8 +43,6 @@ def remove_song_from_playlist(playlist_id, song_id):
     playlist.songs.remove(song)
     db.session.commit()
     return jsonify({"message": "Song removed successfully", "song_id": song_id}), 200
-
-
 
 
 @playlist_routes.route('/create', methods=['GET'])
