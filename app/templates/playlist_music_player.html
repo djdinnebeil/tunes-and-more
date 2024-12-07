@@ -95,6 +95,12 @@ function nextSong() {
         return;
     }
 
+    if (currentSongIndex + 1 === songs.length) {
+        console.log('End of playlist');
+        stopPlayback();
+        currentSongIndex = -1;
+        return;
+    }
     let nextIndex = (currentSongIndex + 1) % songs.length;
 
     while (!songs[nextIndex]) {

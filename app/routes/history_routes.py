@@ -1,11 +1,7 @@
-from flask import Blueprint, request, jsonify, render_template
+from flask import Blueprint, jsonify, render_template
 from flask_login import current_user, login_required
-from app.models import db, Song, History, Playlist
-from datetime import datetime
-import requests
-from .aws_routes import upload_file_to_s3, remove_file_from_s3
+from app.models import db, History
 from sqlalchemy.orm import joinedload
-from app.config import environment, music_server_url
 
 history_routes = Blueprint('history', __name__)
 

@@ -12,7 +12,6 @@ from app.routes.history_routes import history_routes
 from app.routes.upload_routes import upload_routes
 from app.seeds import seed_commands
 
-
 app = Flask(__name__)
 
 # Configuration

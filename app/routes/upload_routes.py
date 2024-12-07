@@ -18,7 +18,7 @@ def upload_song_page():
     # Default form render (empty fields)
     songs = Song.query.filter_by(user_id=current_user.id).order_by(Song.created_at).all()
     if not songs:
-        return []
+        return render_template('upload_song.html', songs=[])
     songs = [entry.to_dict() for entry in songs]
     return render_template('upload_song.html', songs=songs)
 

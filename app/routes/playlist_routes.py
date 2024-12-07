@@ -94,7 +94,6 @@ def edit_playlist_form(playlist_id):
     )
 
 
-
 @playlist_routes.route('/<int:playlist_id>/edit', methods=['POST'])
 @login_required
 def update_playlist(playlist_id):
@@ -120,6 +119,7 @@ def update_playlist(playlist_id):
 
     db.session.commit()
     return redirect(url_for('playlists.view_user_playlists'))
+
 
 @playlist_routes.route('/<int:playlist_id>/delete', methods=['POST'])
 @login_required

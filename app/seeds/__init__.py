@@ -5,9 +5,7 @@ from .history import seed_history, undo_history
 from .playlists import seed_playlists, undo_playlists
 from app.models.db import db, environment, SCHEMA
 
-
 seed_commands = AppGroup('seed')
-
 
 # Creates the `flask seed all` command
 @seed_commands.command('all')
@@ -22,7 +20,6 @@ def seed():
     seed_songs()
     seed_history()
     seed_playlists()
-
 
 # Creates the `flask seed undo` command
 @seed_commands.command('undo')

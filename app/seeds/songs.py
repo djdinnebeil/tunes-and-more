@@ -3,7 +3,6 @@ from app.models import Song
 from sqlalchemy.sql import text
 from app.config import music_server_url
 
-
 def seed_songs():
     songs = [
         Song(
@@ -106,10 +105,8 @@ def seed_songs():
             file_url=f'{music_server_url}/Zelda-OST-Windmill_Hut.mp3'
         ),
     ]
-
     db.session.bulk_save_objects(songs)
     db.session.commit()
-
 
 
 def undo_songs():
