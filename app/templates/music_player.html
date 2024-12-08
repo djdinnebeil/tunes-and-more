@@ -40,19 +40,21 @@
 <script>
   let currentSongIndex = null; // Track the current song index
   let songs = []; // Updated dynamically from the server
+  let currentSongCard = null; // Keep track of the current song card
 
-  function loadSong(songIndex) {
+
+function loadSong(songIndex) {
     if (songIndex < 0 || songIndex >= songs.length) {
-      console.error('Invalid song index');
-      return;
+        console.error('Invalid song index');
+        return;
     }
 
     currentSongIndex = songIndex;
     const song = songs[songIndex];
 
     if (!song) {
-      console.error('Song not found');
-      return;
+        console.error('Song not found');
+        return;
     }
 
     console.log(`Loading song: ${song.name} by ${song.artist} from ${song.file_url}`);
@@ -65,18 +67,35 @@
     audioPlayer.load();
 
     audioPlayer.play().then(() => {
-      console.log('Playback started');
+        console.log('Playback started');
     }).catch(error => {
-      console.error('Playback failed:', error);
+        console.error('Playback failed:', error);
     });
 
     songInfo.textContent = `${song.name} by ${song.artist}`;
 
+    // Update the background color and text of the currently playing song
+    if (currentSongCard) {
+        currentSongCard.classList.remove('playing'); // Remove 'playing' class from previous card
+        const nowPlayingSpan = currentSongCard.querySelector('.now-playing');
+        if (nowPlayingSpan) {
+            nowPlayingSpan.remove(); // Remove "Now Playing" label
+        }
+    }
+    currentSongCard = document.querySelector(`.song-card-row[data-song-id="${song.id}"]`);
+    if (currentSongCard) {
+        currentSongCard.classList.add('playing'); // Add 'playing' class
+        const nowPlayingSpan = document.createElement('span');
+        nowPlayingSpan.className = 'now-playing';
+        nowPlayingSpan.textContent = 'Now Playing';
+        currentSongCard.querySelector('.song-details').appendChild(nowPlayingSpan);
+    }
+
     fetch(`/songs/play/${song.id}`, { method: 'POST' })
-      .then(response => response.json())
-      .then(data => console.log(`Play count updated: ${data.play_count}`))
-      .catch(error => console.error('Error updating play count:', error));
-  }
+        .then(response => response.json())
+        .then(data => console.log(`Play count updated: ${data.play_count}`))
+        .catch(error => console.error('Error updating play count:', error));
+}
 
   function nextSong() {
     if (currentSongIndex === null || songs.length === 0) {
@@ -87,6 +106,14 @@
 
     if (currentSongIndex + 1 === songs.length) {
         console.log('End of playlist');
+                // Clear the "Now Playing" label and class from the current song card
+        if (currentSongCard) {
+            currentSongCard.classList.remove('playing'); // Remove the "playing" style
+            const nowPlayingLabel = currentSongCard.querySelector('.now-playing');
+            if (nowPlayingLabel) nowPlayingLabel.remove(); // Remove the "Now Playing" label
+            currentSongCard = null; // Reset the current song card reference
+        }
+
         stopPlayback();
         currentSongIndex = -1;
         return;
@@ -190,29 +217,30 @@
     songsGrid.innerHTML = ''; // Clear existing content
 
     if (songs.length === 0 || songs === 'undefined') {
-      songsGrid.innerHTML = '<p>No songs added.</p>';
+        songsGrid.innerHTML = '<p>No songs added.</p>';
     } else {
-      songs.forEach((song, index) => {
-        const songCardRow = document.createElement('div');
-        songCardRow.className = 'song-card-row';
+        songs.forEach((song, index) => {
+            const songCardRow = document.createElement('div');
+            songCardRow.className = 'song-card-row';
+            songCardRow.dataset.songId = song.id;
+            songCardRow.innerHTML = `
+                <div class="song-card">
+                    <button onclick="loadSong(${index})" class="play-button">
+                        <div class="song-details">
+                            <span class="song-name">${song.name}<span class="song-artist"> by ${song.artist}</span></span>&nbsp;
 
-        songCardRow.innerHTML = `
-            <div class="song-card">
-                <button onclick="loadSong(${index})" class="play-button">
-                    <div class="song-details">
-                        <span class="song-name">${song.name}</span>
-                        <span class="song-artist">${song.artist}</span>
-                    </div>
-                </button>
-            </div>
-            &nbsp;
-            <button onclick="removeSong(${song.id})" class="remove-button">Delete</button>
-        `;
+                        </div>
+                    </button>
+                </div>
+                &nbsp;
+                <button onclick="removeSong(${song.id})" class="remove-button">Delete</button>
+            `;
 
-        songsGrid.appendChild(songCardRow);
-      });
+            songsGrid.appendChild(songCardRow);
+        });
     }
-  }
+}
+
 
   // Automatically play the next song when the current song ends
   document.getElementById('audio-player').addEventListener('ended', () => {
@@ -221,4 +249,25 @@
   });
 
 </script>
+<style>
+.song-card-row {
+    transition: background-color 0.3s ease;
+}
+
+/*.song-card-row[data-song-id]:hover {*/
+/*    background-color: lightblue;*/
+/*}*/
+
+.song-card-row.playing {
+    background-color: darkblue;
+    color: white; /* Optional: Ensure text is visible */
+}
+
+.now-playing {
+    font-weight: bold;
+    color: white;
+    margin-left: 10px; /* Add spacing from the song name */
+}
+
+</style>
 {% endblock %}

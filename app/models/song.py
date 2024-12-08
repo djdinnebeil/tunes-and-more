@@ -1,6 +1,6 @@
 from .db import db, environment, SCHEMA, add_prefix_for_prod
+from .tables import playlist_songs
 from datetime import datetime
-from .playlist import playlist_songs
 
 class Song(db.Model):
     __tablename__ = 'songs'
@@ -32,7 +32,7 @@ class Song(db.Model):
             'artist': self.artist,
             'album': self.album,
             'genre': self.genre,
-            'duration': self.duration,  # Duration in seconds
+            'duration': self.duration,
             'file_url': self.file_url,
             'created_at': self.created_at.isoformat(),
             'updated_at': self.updated_at.isoformat()

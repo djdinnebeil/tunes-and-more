@@ -43,35 +43,44 @@ def update_play_count(song_id):
 
     return jsonify(history.to_dict()), 200
 
+from sqlalchemy import delete
+from app.models.tables import playlist_songs
 
 @song_routes.route('/remove/<song_id>', methods=['GET'])
 @login_required
 def delete_song(song_id):
-    # song = Song.query.filter_by(id=song_id).first()
-    song = Song.query.get(song_id)
+    try:
+        # song = Song.query.filter_by(id=song_id).first()
+        stmt = delete(playlist_songs).where(playlist_songs.c.song_id == song_id)
+        db.session.execute(stmt)
 
-    if not song:
-        return jsonify({"error": "Song not found"}), 404
+        song = Song.query.get(song_id)
 
-    if song.user_id != current_user.id:
-            return jsonify({"error": "Unauthorized"}), 403
 
-    if environment in ['production', 'aws-testing']:
-        removed = remove_file_from_s3(song.file_url)
-        if not removed:
-            return jsonify({"error": "AWS bucket delete error"}), 400
-    else:
-        # Local deletion logic
-        file_url = song.file_url
-        filename = file_url.split('/')[-1]  # Extract the filename from the URL
-        local_server_url = f"{music_server_url}/{filename}"
-        print('local server url', local_server_url)
+        if not song:
+            return jsonify({"error": "Song not found"}), 404
 
-        response = requests.delete(local_server_url)
-        if response.status_code != 200:
-            return jsonify({"error": f"Failed to delete file from local server: {response.json().get('error', 'Unknown error')}"}), 500
+        if song.user_id != current_user.id:
+                return jsonify({"error": "Unauthorized"}), 403
 
-    # Delete the song record
-    db.session.delete(song)
-    db.session.commit()
-    return jsonify({"message": "Song deleted successfully", "song_id": song_id, "name": song.name}), 200
+        if environment in ['production', 'aws-testing']:
+            removed = remove_file_from_s3(song.file_url)
+            if not removed:
+                return jsonify({"error": "AWS bucket delete error"}), 400
+        else:
+            # Local deletion logic
+            file_url = song.file_url
+            filename = file_url.split('/')[-1]  # Extract the filename from the URL
+            local_server_url = f"{music_server_url}/{filename}"
+            print('local server url', local_server_url)
+
+            response = requests.delete(local_server_url)
+            if response.status_code != 200:
+                return jsonify({"error": f"Failed to delete file from local server: {response.json().get('error', 'Unknown error')}"}), 500
+
+        # Delete the song record
+        db.session.delete(song)
+        db.session.commit()
+        return jsonify({"message": "Song deleted successfully", "song_id": song_id, "name": song.name}), 200
+    except Exception as e:
+        return {'error': str(e)}, 500

@@ -1,19 +1,17 @@
 """empty message
 
-Revision ID: 96602358420c
+Revision ID: f4e69cd21b30
 Revises: 
-Create Date: 2024-12-05 12:40:30.087684
+Create Date: 2024-12-07 19:20:37.356414
 
 """
 from alembic import op
 import sqlalchemy as sa
+from app.config import environment, SCHEMA
 
-import os
-environment = os.getenv("FLASK_ENV")
-SCHEMA = os.environ.get("SCHEMA")
 
 # revision identifiers, used by Alembic.
-revision = '96602358420c'
+revision = 'f4e69cd21b30'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -81,9 +79,10 @@ def upgrade():
     op.create_table('playlist_songs',
     sa.Column('playlist_id', sa.Integer(), nullable=False),
     sa.Column('song_id', sa.Integer(), nullable=False),
+    sa.Column('song_order', sa.Integer(), nullable=False),
     sa.ForeignKeyConstraint(['playlist_id'], ['playlists.id'], ),
     sa.ForeignKeyConstraint(['song_id'], ['songs.id'], ),
-    sa.PrimaryKeyConstraint('playlist_id', 'song_id')
+    sa.PrimaryKeyConstraint('playlist_id', 'song_id', 'song_order')
     )
     if environment == "production":
         op.execute(f"ALTER TABLE playlist_songs SET SCHEMA {SCHEMA};")

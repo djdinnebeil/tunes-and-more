@@ -1,5 +1,6 @@
 from .db import db
+from .tables import playlist_songs
 from .user import User
 from .song import Song
-from .history import History
 from .playlist import Playlist
+from .history import History

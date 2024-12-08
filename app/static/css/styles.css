@@ -90,6 +90,7 @@ footer {
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
+
 }
 
 .song-name {
@@ -101,10 +102,11 @@ footer {
 }
 
 .song-artist {
-    font-size: 1em;
+    font-size: 0.8em;
     color: #fff;
     margin: 0;
     text-align: right;
+    font-weight: normal;
 }
 
 /* Play Button */
@@ -408,4 +410,9 @@ footer {
 
     .btn:hover {
         background-color: #0056b3;
+    }
+
+    .now-playing {
+        color: red;
+        margin-left: auto;
     }

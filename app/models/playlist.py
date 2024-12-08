@@ -1,14 +1,7 @@
 from .db import db, environment, SCHEMA, add_prefix_for_prod
+from .tables import playlist_songs
+from .song import Song
 from datetime import datetime
-
-# Association table for playlists and songs
-playlist_songs = db.Table(
-    'playlist_songs',
-    db.Model.metadata,
-    db.Column('playlist_id', db.Integer, db.ForeignKey(add_prefix_for_prod('playlists.id')), primary_key=True),
-    db.Column('song_id', db.Integer, db.ForeignKey(add_prefix_for_prod('songs.id')), primary_key=True),
-    schema=SCHEMA if environment == "production" else None
-)
 
 class Playlist(db.Model):
     __tablename__ = 'playlists'
@@ -24,14 +17,33 @@ class Playlist(db.Model):
 
     # Relationships
     user = db.relationship('User', back_populates='playlists')
-    songs = db.relationship('Song', secondary=playlist_songs, back_populates='playlists')
+    songs = db.relationship(
+        'Song',
+        secondary=playlist_songs,
+        back_populates='playlists',
+        order_by=playlist_songs.c.song_order
+    )
 
     def to_dict(self):
+        song_entries = db.session.query(Song, playlist_songs.c.song_order) \
+            .join(playlist_songs, Song.id == playlist_songs.c.song_id) \
+            .filter(playlist_songs.c.playlist_id == self.id) \
+            .order_by(playlist_songs.c.song_order).all()
+
         return {
             'id': self.id,
             'user_id': self.user_id,
             'name': self.name,
             'created_at': self.created_at.strftime('%b %d, %Y %I:%M %p') if self.created_at else None,
             'updated_at': self.updated_at.strftime('%b %d, %Y %I:%M %p') if self.updated_at else None,
-            'songs': [song.to_dict() for song in self.songs]
+            'songs': [
+                {
+                    'id': song.id,
+                    'name': song.name,
+                    'artist': song.artist,
+                    'file_url': song.file_url,  # Ensure this field is included
+                    'song_order': song_order
+                }
+                for song, song_order in song_entries
+            ]
         }
