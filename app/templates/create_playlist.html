@@ -81,54 +81,36 @@ const selectedSongs = [];
 const selectedSongsList = document.getElementById('selected-songs');
 const songsInput = document.getElementById('songs-input');
 
-// Add a song to the playlist
 document.querySelectorAll('.add-song-btn').forEach(button => {
     button.addEventListener('click', () => {
         const songId = String(button.dataset.songId);
         const songName = button.dataset.songName;
         const songArtist = button.dataset.songArtist;
-
-        // Add the song to selectedSongs
         selectedSongs.push({ id: songId, name: songName, artist: songArtist });
-
-        // Recalculate orders
         recalculateOrders();
-
-        // Update DOM and hidden input
         updateDOMAndInput();
     });
 });
 
-// Remove a song from the playlist by songId and songOrder
 function removeSong(songId, songOrder) {
     songId = String(songId);
-
-    // Remove the correct song from selectedSongs
     const index = selectedSongs.findIndex(song => song.id === songId && song.order === songOrder);
     if (index > -1) {
         selectedSongs.splice(index, 1);
     }
-
-    // Recalculate orders
     recalculateOrders();
-
-    // Update DOM and hidden input
     updateDOMAndInput();
 }
 
-// Recalculate the order for all songs in selectedSongs
 function recalculateOrders() {
     selectedSongs.forEach((song, index) => {
-        song.order = index + 1; // Order starts from 1
+        song.order = index + 1;
     });
 }
 
-// Update the DOM and the hidden input with the recalculated orders
 function updateDOMAndInput() {
-    // Clear the list in the DOM
     selectedSongsList.innerHTML = '';
 
-    // Repopulate the DOM and update the hidden input
     selectedSongs.forEach(song => {
         const songItem = document.createElement('li');
         songItem.dataset.songId = song.id;
@@ -140,31 +122,25 @@ function updateDOMAndInput() {
         selectedSongsList.appendChild(songItem);
     });
 
-    // Update the hidden input
     songsInput.value = selectedSongs.map(song => `${song.id}:${song.order}`).join(',');
-    console.log('Updated Hidden Input Value:', songsInput.value); // Debugging
 }
 
 // Enable drag-and-drop sorting
 new Sortable(selectedSongsList, {
     animation: 150,
     onEnd: () => {
-        // Rebuild the selectedSongs array based on the current DOM order
         const newOrder = Array.from(selectedSongsList.children).map((item, index) => {
             const songId = item.dataset.songId;
             return { id: songId, name: item.textContent.split(' by ')[0], artist: '', order: index + 1 };
         });
 
-        // Replace the current selectedSongs array
         selectedSongs.splice(0, selectedSongs.length, ...newOrder);
 
-        // Recalculate orders and update DOM/input
         recalculateOrders();
         updateDOMAndInput();
     }
 });
 
-// Validate that no duplicate orders exist
 function validateUniqueOrders() {
     const orders = selectedSongs.map(song => song.order);
     const uniqueOrders = new Set(orders);
@@ -178,11 +154,9 @@ function validateUniqueOrders() {
 
 document.querySelector('.playlist-form').addEventListener('submit', (e) => {
     if (!validateUniqueOrders()) {
-        e.preventDefault(); // Stop form submission
+        e.preventDefault();
     }
 });
 
 </script>
-
-
 {% endblock %}

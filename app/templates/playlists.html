@@ -167,8 +167,6 @@ li {
       return response.json();
     })
     .then(data => {
-      // alert(data.message);
-
       // Remove the playlist from the DOM
       const playlistElement = document.getElementById(`playlist-${playlistId}`);
       if (playlistElement) {

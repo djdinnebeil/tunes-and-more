@@ -5,14 +5,14 @@ allowed_extensions = {'mp3'}
 environment = os.getenv('FLASK_ENV')
 SCHEMA = os.environ.get('SCHEMA')
 
-BUCKET_NAME = os.environ.get('S3_BUCKET')
-S3_REGION = os.environ.get('S3_REGION')
-S3_LOCATION = f'https://{BUCKET_NAME}.s3.{S3_REGION}.amazonaws.com'
+bucket_name = os.environ.get('S3_BUCKET')
+s3_region = os.environ.get('S3_REGION')
+s3_server_url = f'https://{bucket_name}.s3.{s3_region}.amazonaws.com'
 S3_KEY = os.environ.get("S3_KEY")
 S3_SECRET = os.environ.get("S3_SECRET")
 
 if environment == 'production' or environment == 'aws-testing':
-    music_server_url = S3_LOCATION
+    music_server_url = s3_server_url
 else:
     music_server_url = 'http://localhost:5000'
 

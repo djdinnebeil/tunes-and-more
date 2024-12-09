@@ -434,12 +434,12 @@ body {
 
 .song-card-row.playing {
     background-color: darkblue;
-    color: white; /* Optional: Ensure text is visible */
+    color: white;
     padding-right: 12px;
 }
 
 .now-playing {
     font-weight: bold;
     color: white;
-    margin-left: 10px; /* Add spacing from the song name */
+    margin-left: 10px;
 }

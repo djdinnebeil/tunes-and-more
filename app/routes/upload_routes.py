@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify, render_template
 from flask_login import current_user, login_required
 from sqlalchemy.exc import SQLAlchemyError
-from app.models import db, Song, History, Playlist
+from app.models import db, Song, History
 from app.models.tables import playlist_songs
 import requests
 from .aws_routes import upload_file_to_s3, remove_file_from_s3
@@ -49,7 +49,7 @@ def save_song():
     check_for_duplicate = Song.query.filter_by(file_url=pre_url).first()
 
     if check_for_duplicate is not None:
-        return jsonify({'errors': 'A song with this file url already exists'}), 409
+        return jsonify({'errors': 'A song with this file url already exists.'}), 409
 
     if environment in ['production', 'aws-testing']:
         upload = upload_file_to_s3(file)

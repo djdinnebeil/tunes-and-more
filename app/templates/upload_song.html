@@ -193,7 +193,7 @@ function removeSong(songIndex) {
           fetchSongs(); // Refresh the list
           stopPlayback();
           const successMessage = document.getElementById('success-message');
-          successMessage.innerHTML = `<span style="color: red;">${songName} deleted successfully!</span>`;
+          successMessage.innerHTML = `<span style="color: red;">${songName} deleted successfully.</span>`;
           successMessage.style.display = 'block';
         } else {
           alert('Failed to remove the song.');

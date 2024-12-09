@@ -36,7 +36,6 @@ def remove_song_from_playlist(playlist_id, song_id, song_order):
     if not playlist:
         return jsonify({"error": "Playlist not found"}), 404
 
-    # Find the exact song entry in playlist_songs based on playlist_id, song_id, and song_order
     entry = db.session.execute(
         """
         SELECT * FROM playlist_songs
@@ -48,7 +47,6 @@ def remove_song_from_playlist(playlist_id, song_id, song_order):
     if not entry:
         return jsonify({"error": "Song entry not found in playlist"}), 404
 
-    # Remove the specific entry
     db.session.execute(
         """
         DELETE FROM playlist_songs
@@ -86,7 +84,6 @@ def create_playlist():
     else:
         song_entries = []  # Allow empty playlists
 
-    # Create the playlist
     new_playlist = Playlist(user_id=current_user.id, name=name)
     db.session.add(new_playlist)
     db.session.commit()
@@ -121,7 +118,6 @@ def edit_playlist_form(playlist_id):
 
     available_songs = Song.query.all()
 
-    # Explicitly query playlist_songs to include duplicates with order
     song_entries = db.session.execute(
         """
         SELECT songs.id, songs.name, songs.artist, playlist_songs.song_order
@@ -133,8 +129,6 @@ def edit_playlist_form(playlist_id):
         {"playlist_id": playlist.id}
     ).fetchall()
 
-    # Debug: Print the song entries to check the query results
-    print("Fetched song entries:", song_entries)
 
     # Convert the results into a list of dictionaries
     playlist_data = {
@@ -175,17 +169,14 @@ def update_playlist(playlist_id):
     else:
         song_entries = []
 
-    # Update playlist name
     playlist.name = name
     db.session.commit()
 
-    # Clear existing associations
     db.session.execute(
         "DELETE FROM playlist_songs WHERE playlist_id = :playlist_id",
         {"playlist_id": playlist.id}
     )
 
-    # Add updated songs, ensuring uniqueness in (playlist_id, song_id, song_order)
     for entry in song_entries:
         db.session.execute(
             """
@@ -199,24 +190,18 @@ def update_playlist(playlist_id):
     return redirect(url_for('playlists.view_user_playlists'))
 
 
-
-
-
 @playlist_routes.route('/<int:playlist_id>/delete', methods=['POST'])
 @login_required
 def delete_playlist(playlist_id):
-    # Fetch the playlist for the current user
     playlist = Playlist.query.filter_by(id=playlist_id, user_id=current_user.id).first()
     if not playlist:
         return jsonify({"error": "Playlist not found"}), 404
 
-    # Remove all associated rows from `playlist_songs`
     db.session.execute(
         "DELETE FROM playlist_songs WHERE playlist_id = :playlist_id",
         {"playlist_id": playlist.id}
     )
 
-    # Delete the playlist itself
     db.session.delete(playlist)
     db.session.commit()
 

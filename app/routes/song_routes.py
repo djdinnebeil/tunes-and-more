@@ -1,11 +1,8 @@
-from flask import Blueprint, request, jsonify, render_template
+from flask import Blueprint, jsonify, render_template
 from flask_login import current_user, login_required
 from app.models import db, Song, History, Playlist
 from datetime import datetime
-import requests
-from .aws_routes import upload_file_to_s3, remove_file_from_s3
-from sqlalchemy.orm import joinedload
-from app.config import environment, music_server_url
+
 
 song_routes = Blueprint('songs', __name__)
 
@@ -22,7 +19,7 @@ def music_player():
 @song_routes.route('/current', methods=['GET'])
 @login_required
 def get_songs():
-    songs = Song.query.filter_by(user_id=current_user.id).all()  # Filter songs by user
+    songs = Song.query.filter_by(user_id=current_user.id).all()
     return jsonify([song.to_dict() for song in songs])
 
 
@@ -42,4 +39,3 @@ def update_play_count(song_id):
     db.session.commit()
 
     return jsonify(history.to_dict()), 200
-
