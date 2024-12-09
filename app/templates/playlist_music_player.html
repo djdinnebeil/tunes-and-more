@@ -223,21 +223,4 @@ function loadSong(songIndex) {
   audioPlayer.addEventListener('ended', nextSong);
   loadSong(0);
 </script>
-<style>
-  .song-card-row {
-    transition: background-color 0.3s ease;
-}
-
-.song-card-row.playing {
-    background-color: darkblue;
-    color: white; /* Ensure text is visible */
-}
-
-.now-playing {
-    font-weight: bold;
-    color: white;
-    margin-left: 10px; /* Add spacing from the song name */
-}
-
-</style>
 {% endblock %}

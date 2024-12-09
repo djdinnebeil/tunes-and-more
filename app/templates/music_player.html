@@ -170,7 +170,7 @@ function loadSong(songIndex) {
       return;
     }
     let currentSongId = songs[currentSongIndex]?.id
-    fetch(`/songs/remove/${songId}`, { method: 'GET' })
+    fetch(`/upload/remove/${songId}`, { method: 'GET' })
       .then(response => {
         if (!response.ok) {
           return response.json().then(err => {
@@ -250,24 +250,6 @@ function loadSong(songIndex) {
 
 </script>
 <style>
-.song-card-row {
-    transition: background-color 0.3s ease;
-}
-
-/*.song-card-row[data-song-id]:hover {*/
-/*    background-color: lightblue;*/
-/*}*/
-
-.song-card-row.playing {
-    background-color: darkblue;
-    color: white; /* Optional: Ensure text is visible */
-}
-
-.now-playing {
-    font-weight: bold;
-    color: white;
-    margin-left: 10px; /* Add spacing from the song name */
-}
 
 </style>
 {% endblock %}

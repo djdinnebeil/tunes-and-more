@@ -101,7 +101,7 @@ function updateDOMAndInput() {
         songItem.dataset.order = song.order;
         songItem.innerHTML = `
             ${song.name} by ${song.artist} (Order: ${song.order})
-            <span class="remove-song-btn" onclick="removeSong('${song.id}')">Remove</span>
+            <span class="remove-song-btn" onclick="removeSong('${song.id}', ${song.order})">Remove</span>
         `;
         selectedSongsList.appendChild(songItem);
     });
@@ -130,9 +130,11 @@ document.querySelectorAll('.add-song-btn').forEach(button => {
 });
 
 // Remove a song from the playlist by songId
-function removeSong(songId) {
+function removeSong(songId, songOrder) {
+    songId = String(songId);
+
     // Remove the correct song from selectedSongs
-    const index = selectedSongs.findIndex(song => song.id === songId);
+    const index = selectedSongs.findIndex(song => song.id === songId && song.order === songOrder);
     if (index > -1) {
         selectedSongs.splice(index, 1);
     }

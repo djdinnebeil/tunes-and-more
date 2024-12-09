@@ -1,16 +1,17 @@
 from flask import Blueprint, request, jsonify, render_template
 from flask_login import current_user, login_required
+from sqlalchemy.exc import SQLAlchemyError
 from app.models import db, Song, History, Playlist
-from datetime import datetime
+from app.models.tables import playlist_songs
 import requests
 from .aws_routes import upload_file_to_s3, remove_file_from_s3
-from sqlalchemy.orm import joinedload
-from app.config import environment, music_server_url
+from app.config import environment, music_server_url, allowed_extensions
+from sqlalchemy import delete
+from app.utils import format_filename, handle_local_deletion
+from requests.exceptions import RequestException
 
 upload_routes = Blueprint('upload', __name__)
 
-def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in {'mp3'}
 
 @upload_routes.route('/', methods=['GET'])
 @login_required
@@ -26,17 +27,23 @@ def upload_song_page():
 @upload_routes.route('/save', methods=['POST'])
 @login_required
 def save_song():
+    file = request.files.get('file')
+    if not file:
+        return jsonify({'error': 'Missing file.'}), 400
+
+    file_ext = file.filename.rsplit('.', 1)[1].lower()
+    if file_ext not in allowed_extensions:
+        allowed_types = ", ".join(allowed_extensions)
+        return jsonify({'error': f'File type {file_ext} not supported. Allowed types: {allowed_types}'}), 400
+
     # Get metadata from the form
     name = request.form.get('name', 'Unknown Title')
     artist = request.form.get('artist', 'Unknown Artist')
     album = request.form.get('album', None)
     genre = request.form.get('genre', None)
     duration = request.form.get('duration', 0)
-    file = request.files.get('file')
-    file.filename = f"{artist}-{album}-{name}.mp3".replace(" ", "_")
 
-    if not file or not allowed_file(file.filename):
-        return jsonify({'error': 'Invalid or missing file.'}), 400
+    file.filename = format_filename(name, artist, album, file_ext)
 
     pre_url = f'{music_server_url}/{file.filename}'
     check_for_duplicate = Song.query.filter_by(file_url=pre_url).first()
@@ -127,3 +134,37 @@ def update_song(song_id):
     db.session.commit()
 
     return jsonify(song.to_dict()), 200
+
+
+@upload_routes.route('/remove/<int:song_id>', methods=['GET'])
+@login_required
+def delete_song(song_id):
+    try:
+        stmt = delete(playlist_songs).where(playlist_songs.c.song_id == song_id)
+        db.session.execute(stmt)
+
+        song = Song.query.get(song_id)
+        if not song:
+            return jsonify({"error": "Song not found"}), 404
+        if song.user_id != current_user.id:
+                return jsonify({"error": "Unauthorized"}), 403
+
+        if environment in ['production', 'aws-testing']:
+            removed = remove_file_from_s3(song.file_url)
+            if not removed:
+                return jsonify({"error": "AWS bucket delete error"}), 400
+            message = 'Song deleted successfully from AWS'
+        else:
+            message = handle_local_deletion(song.file_url)
+
+        # Delete the song record
+        db.session.delete(song)
+        db.session.commit()
+        return jsonify({'message': message, 'song_id': song_id, 'name': song.name}), 200
+    except SQLAlchemyError as db_error:
+        db.session.rollback()
+        return jsonify({"error": "Database error occurred"}), 500
+    except RequestException as req_error:
+        return jsonify({"error": f"Local server error: {str(req_error)}"}), 500
+    except Exception as e:
+        return jsonify({"error": f"Unexpected error: {str(e)}"}), 500

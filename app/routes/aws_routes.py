@@ -1,6 +1,5 @@
 import boto3
-import uuid
-from app.config import BUCKET_NAME, S3_LOCATION, S3_KEY, S3_SECRET, ALLOWED_EXTENSIONS
+from app.config import BUCKET_NAME, S3_LOCATION, S3_KEY, S3_SECRET
 
 s3 = boto3.client(
    "s3",
@@ -8,21 +7,8 @@ s3 = boto3.client(
    aws_secret_access_key=S3_SECRET
 )
 
-def allowed_file(filename):
-    # Check if the file has an extension and if it's in ALLOWED_EXTENSIONS
-    return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
-
-
-def get_unique_filename(filename):
-    ext = filename.rsplit(".", 1)[1].lower()
-    unique_filename = uuid.uuid4().hex
-    return f"{unique_filename}.{ext}"
-
 
 def upload_file_to_s3(file, acl="public-read"):
-    if not allowed_file(file.filename):
-        allowed_types = ", ".join(ALLOWED_EXTENSIONS)
-        return {"errors": f"File type not allowed. Allowed types: {allowed_types}."}
     try:
         s3.upload_fileobj(
             file,

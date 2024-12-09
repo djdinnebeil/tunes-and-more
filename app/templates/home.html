@@ -1,16 +1,21 @@
 {% extends 'layout.html' %}
 
-{% block title %}Welcome to Tunes and More{% endblock %}
+{% block title %}SoundShift Player{% endblock %}
 
 {% block content %}
-<h1>Welcome to Tunes and More</h1>
+<h1>Welcome to SoundShift Player</h1>
 {% if current_user.is_authenticated %}
-<p> Welcome, {{ current_user.username }}!</p>
-
+<p> You are signed in as {{ current_user.username }}.</p>
 <br>
-<br>
-{% else %}
-<p>Discover and play your favorite songs. Sign up or log in to get started.</p>
-<a href="/signup">Get Started</a>
 {% endif %}
+<p>This is a music player project dedicated towards developing music player extensions for major music platforms, such as Spotify.</p>
+<br>
+<p>
+  {% if not current_user.is_authenticated %}
+  <p>Discover and build new extensions! <a href="/signup">Sign up</a> or <a href="/login">log in</a> to get started.</p>
+{% endif %}
+
+</p>
+
+
 {% endblock %}

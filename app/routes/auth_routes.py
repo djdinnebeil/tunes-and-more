@@ -38,8 +38,8 @@ def signup():
         # Automatically log the user in
         login_user(user)
 
-        # Redirect to the dashboard or homepage
-        return redirect(url_for('auth.dashboard'))
+        # Redirect to homepage
+        return redirect(url_for('home'))
 
     return render_template('signup.html')
 
@@ -59,17 +59,9 @@ def login():
         # Log the user in
         login_user(user)
 
-        # Redirect to a user dashboard or homepage
-        return redirect(url_for('auth.dashboard'))
+        # Redirect to a user to homepage
+        return redirect(url_for('home'))
     return render_template('login.html')
-
-
-@auth_routes.route('/dashboard')
-@login_required
-def dashboard():
-    if not current_user.is_authenticated:
-        return redirect(url_for('auth.login'))  # Redirect to login if not authenticated
-    return render_template('dashboard.html', user=current_user)
 
 
 @auth_routes.route('/logout')
@@ -87,5 +79,5 @@ def demo_login():
 
     login_user(user)
 
-    # Redirect to a user dashboard or homepage
-    return redirect(url_for('auth.dashboard'))
+    # Redirect to a user to homepage
+    return redirect(url_for('home'))
